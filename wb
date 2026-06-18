@@ -1,0 +1,26 @@
+Private Sub Workbook_open()
+    ThisWorkbook.Unprotect Password:="3097"
+    
+    Conos.Unprotect Password:="3097"
+    Conos.Visible = xlSheetVeryHidden
+    
+    consumo.Unprotect Password:="3097"
+    consumo.Visible = xlSheetVeryHidden
+    
+    Exist.Unprotect Password:="3097"
+    Exist.Visible = xlSheetVeryHidden
+    
+    gruposHerramientas.Unprotect Password:="3097"
+    gruposHerramientas.Visible = xlSheetVeryHidden
+    
+    Interfaz.Protect Password:="3097"
+    Interfaz.Visible = xlSheetVisible
+    
+    OPsheet.Unprotect Password:="3097"
+    OPsheet.Visible = xlSheetVeryHidden
+    
+    sumaConsumos.Unprotect Password:="3097"
+    sumaConsumos.Visible = xlSheetVeryHidden
+    
+    ThisWorkbook.Protect Password:="3097", structure:=True
+End Sub
