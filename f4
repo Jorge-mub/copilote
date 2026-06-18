@@ -1,0 +1,686 @@
+Private bloqueaEventos As Boolean
+Dim ws As Worksheet
+Dim table As ListObject
+Dim currentDate As Date
+Public modo As Boolean
+
+Private cat As String
+Private dog As String
+Private bird As String
+Private check As Boolean
+Private vector As Variant
+
+Private Sub cmbUsuario_change()
+    If Me.cmbUsuario.ListIndex <> -1 Then
+        Me.cmbUsuario.BackColor = 12648384
+    Else
+        Me.cmbUsuario.BackColor = &HC0E0FF
+    End If
+End Sub
+
+Private Sub Combobox1_change()
+    If Me.ComboBox1.ListIndex <> -1 Then
+        Me.ComboBox1.BackColor = 12648384
+    Else
+        Me.ComboBox1.BackColor = &HC0E0FF
+    End If
+End Sub
+
+Private Sub textbox1_change()
+    If Me.TextBox1.Value <> "" And Me.TextBox1.Value > 0 Then
+        Me.TextBox1.BackColor = 12648384
+    Else
+        Me.TextBox1.BackColor = &HC0E0FF
+    End If
+End Sub
+
+Private Sub UserForm_Initialize()
+    Dim cell As Range
+    Dim fin As Long
+    Dim tblE As ListObject
+    Dim vE As Variant
+    Dim dictT As Object, dictG As Object
+    Dim iE As Long, kE As Variant
+
+    On Error Resume Next
+    If Exist.ListObjects("tabExistencias").AutoFilter.FilterMode Then
+        Exist.ListObjects("tabExistencias").AutoFilter.ShowAllData
+    End If
+    If consumo.ListObjects("DailyConsumption").AutoFilter.FilterMode Then
+        consumo.ListObjects("DailyConsumption").AutoFilter.ShowAllData
+    End If
+    If OPsheet.ListObjects("tabPO").AutoFilter.FilterMode Then
+        OPsheet.ListObjects("tabPO").AutoFilter.ShowAllData
+    End If
+    On Error GoTo 0
+    
+    currentDate = Date
+    Me.startupposition = 0
+    Me.Height = Application.ActiveWindow.Height * 0.85
+    Me.Width = Application.ActiveWindow.Width * 0.8
+    Me.Top = Application.ActiveWindow.Top + Application.ActiveWindow.Height * 0.075
+    Me.Left = Application.ActiveWindow.Left + Application.ActiveWindow.Width * 0.1
+    
+    With Me.ComboBox1
+        fin = Exist.ListObjects("tabExistencias").ListRows.Count + 1
+        .Clear
+        .BackColor = &HC0E0FF
+        For Each cell In Exist.Range("D2:D" & fin)
+            If Not IsEmpty(cell.Value) Then
+                .AddItem cell.Value
+            End If
+        Next cell
+    End With
+    
+    With Me.cmbUsuario
+        .Clear
+        .BackColor = &HC0E0FF
+        .AddItem "Alejandro Tellez Gonzalez"
+        .AddItem "Arlex Donato Hernandez Lopez"
+        .AddItem "Brandon Ariel Cordova Peña"
+        .AddItem "Christian Jesus Torres Cervantes"
+        .AddItem "Daniel De Jesus Garita"
+        .AddItem "David De Jesus Garita"
+        .AddItem "Fernando Segundo Villa Martinez"
+        .AddItem "Francisco Alexis Garcia Mendez"
+        .AddItem "Francisco Javier Ramirez Nuñez"
+        .AddItem "Gabriel Gomez"
+        .AddItem "Javier Morales Mendoza"
+        .AddItem "Juan Carlos Villanueva Galvan"
+        .AddItem "Jorge Melendez"
+        .AddItem "Jose Armando Malagon Perez"
+        .AddItem "Luis Arturo Suaste Gasca"
+        .AddItem "Luis Fernando Juarez Lara"
+        .AddItem "Miguel Obed Rosas Arellano"
+        .AddItem "Roberto Carlos Mandujano Perez"
+        .AddItem "Rubi Dayanne Aguilar Hurtado"
+    End With
+    
+    Me.TextBox1.BackColor = &HC0E0FF
+    
+    Set tblE = Exist.ListObjects("tabExistencias")
+    If tblE.ListRows.Count > 0 Then
+        vE = tblE.DataBodyRange.Value
+        Set dictT = CreateObject("Scripting.Dictionary")
+        Set dictG = CreateObject("Scripting.Dictionary")
+        
+        For iE = 1 To UBound(vE, 1)
+            If Not IsEmpty(vE(iE, 1)) And CStr(vE(iE, 1)) <> "" Then
+                dictT(CStr(vE(iE, 1))) = 1
+            End If
+            If Not IsEmpty(vE(iE, 6)) And CStr(vE(iE, 6)) <> "" Then
+                dictG(CStr(vE(iE, 6))) = 1
+            End If
+        Next iE
+        
+        Me.cmbFiltroTipo.Clear
+        For Each kE In dictT.keys
+            Me.cmbFiltroTipo.AddItem kE
+        Next kE
+        
+        Me.cmbFiltroGrupo.Clear
+        For Each kE In dictG.keys
+            Me.cmbFiltroGrupo.AddItem kE
+        Next kE
+    End If
+    
+    Set ws = ThisWorkbook.Sheets("ConsumoDia")
+    Set table = ws.ListObjects("DailyConsumption")
+    
+    Call FiltrarCaja2("")
+End Sub
+
+Private Sub UserForm_Activate()
+    If modo Then
+        Me.Caption = "Descuento de Inventario"
+        Me.Label10.Visible = True
+        Me.Label11.Visible = False
+    Else
+        Me.Caption = "Entrada de Material"
+        Me.Label10.Visible = False
+        Me.Label11.Visible = True
+    End If
+    
+    With Me.Label10
+        .Height = Me.Height * 0.042
+        .Width = Me.Width
+        .Top = 0
+        .Left = 0
+        .Caption = "Descontar  ."
+        .Font.Size = Me.Height * 0.035
+        .Font.Bold = True
+        .TextAlign = fmTextAlignRight
+    End With
+    
+    With Me.Label11
+        .Height = Me.Height * 0.042
+        .Width = Me.Width
+        .Top = 0
+        .Left = 0
+        .Caption = "Agregar  ."
+        .Font.Size = Me.Height * 0.035
+        .Font.Bold = True
+        .TextAlign = fmTextAlignRight
+    End With
+    
+    With Me.caja1
+        .Height = Me.Height * 0.5
+        .Width = Me.Width * 0.5
+        .Top = Me.Height * 0.4
+        .Left = Me.Width * 0.47
+        .ColumnCount = 4
+        .ColumnWidths = Me.caja1.Width * 0.45 & ";" & _
+                        Me.caja1.Width * 0.2 & ";" & _
+                        Me.caja1.Width * 0.1 & ";" & _
+                        Me.caja1.Width * 0.2
+        .Font.Size = Me.Height * 0.026
+        .TextAlign = fmTextAlignCenter
+    End With
+    
+    With Me.lbl01
+        .Height = Me.Height * 0.041
+        .Width = Me.caja1.Width * 0.45
+        .Top = Me.caja1.Top - .Height
+        .Left = Me.caja1.Left
+        .Font.Size = Me.Height * 0.029
+        .Caption = "Artículo"
+        '.Visible = False
+    End With
+    
+    With Me.lbl02
+        .Height = Me.Height * 0.041
+        .Width = Me.caja1.Width * 0.2
+        .Top = Me.caja1.Top - .Height
+        .Left = Me.lbl01.Left + Me.lbl01.Width
+        .Font.Size = Me.Height * 0.029
+        .Caption = "Condición"
+    End With
+    
+    With Me.lbl03
+        .Height = Me.Height * 0.041
+        .Width = Me.caja1.Width * 0.1
+        .Top = Me.caja1.Top - .Height
+        .Left = Me.lbl02.Left + Me.lbl02.Width
+        .Font.Size = Me.Height * 0.029
+        .Caption = "QTY"
+    End With
+    
+    With Me.lbl04
+        .Height = Me.Height * 0.041
+        .Width = Me.caja1.Width * 0.25
+        .Top = Me.caja1.Top - .Height
+        .Left = Me.lbl03.Left + Me.lbl03.Width
+        .Font.Size = Me.Height * 0.029
+        .Caption = "Usuario"
+    End With
+    
+    On Error Resume Next
+    With Me.lbl05
+        .Height = Me.Height * 0.041
+        .Width = Me.caja1.Width * 0.2
+        .Top = Me.caja1.Top - .Height
+        .Left = Me.lbl04.Left + Me.lbl04.Width
+        .Font.Size = Me.Height * 0.029
+        .Caption = "Usuario"
+        .Visible = False
+    End With
+    On Error GoTo 0
+    
+    With Me.Label3
+        .Height = Me.Height * 0.04
+        .Width = Me.caja1.Width * 0.3
+        .Top = Me.Height * 0.07
+        .Left = Me.Width * 0.03
+        .Caption = "Usuario"
+        .Font.Size = Me.Height * 0.03
+        .Font.Bold = True
+    End With
+    
+    With Me.Label12
+        .Height = Me.Height * 0.04
+        .Width = Me.caja1.Width * 0.3
+        .Top = Me.Height * 0.17
+        .Left = Me.Width * 0.03
+        .Caption = "Buscar artículo"
+        .Font.Size = Me.Height * 0.03
+        .Font.Bold = True
+    End With
+    
+    'With Me.ComboBox2
+    '    .Height = Me.Height * 0.055
+    '    .Width = Me.Width * 0.2
+    '    .Top = Me.Height * 0.15
+    '    .Left = Me.caja1.Left
+    '    .Font.Size = Me.Height * 0.03
+    'End With
+    
+    With Me.Label1
+        .Height = Me.Height * 0.04
+        .Width = Me.caja1.Width * 0.3
+        .Top = Me.Height * 0.17
+        .Left = Me.Width * 0.41
+        .Font.Size = Me.Height * 0.03
+        .Font.Bold = True
+        .Caption = "Filtro tipo"
+    End With
+    
+    With Me.Label13
+        .Height = Me.Height * 0.04
+        .Width = Me.caja1.Width * 0.3
+        .Top = Me.Height * 0.17
+        .Left = Me.Width * 0.7
+        .Font.Size = Me.Height * 0.03
+        .Font.Bold = True
+        .Caption = "Filtro Grupo"
+    End With
+    
+    With Me.ComboBox1
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.34
+        .Top = Me.Label12.Top + Me.Label12.Height
+        .Left = Me.Width * 0.03
+        .Font.Size = Me.Height * 0.03
+    End With
+    
+    With Me.cmbUsuario
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.3
+        .Top = Me.Label3.Top + Me.Label3.Height
+        .Left = Me.Width * 0.03
+        .Font.Size = Me.Height * 0.03
+        '.BackColor = &HC0E0FF
+        '.BackColor = 12648384
+    End With
+    
+    With Me.cmbFiltroTipo
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.25
+        .Top = Me.Label1.Top + Me.Label1.Height
+        .Left = Me.Label1.Left
+        .Font.Size = Me.Height * 0.03
+    End With
+    
+    With Me.cmbFiltroGrupo
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.25
+        .Top = Me.Label13.Top + Me.Label13.Height
+        .Left = Me.Label13.Left
+        .Font.Size = Me.Height * 0.03
+    End With
+    
+    'With Me.btMas
+    '    .Height = Me.Height * 0.05
+    '    .Width = Me.Width * 0.038
+    '    .Top = Me.Height * 0.15
+    '    .Left = Me.Width * 0.255
+    '    .Font.Size = Me.Height * 0.03
+    'End With
+    
+    'With Me.btMenos
+    '    .Height = Me.Height * 0.05
+    '    .Width = Me.Width * 0.038
+    '    .Top = Me.Height * 0.15
+    '    .Left = Me.Width * 0.31
+    '    .Font.Size = Me.Height * 0.03
+    'End With
+    
+    With Me.caja2
+        .Height = Me.Height * 0.5
+        .Width = Me.Width * 0.42
+        .Top = Me.Height * 0.4
+        .Left = Me.Width * 0.03
+        .ColumnCount = 2
+        .ColumnWidths = Me.caja2.Width * 0.6 & ";" & _
+                        Me.caja2.Width * 0.39 & ";"
+        .Font.Size = Me.Height * 0.026
+        .TextAlign = fmTextAlignCenter
+    End With
+    
+    With Me.Label14
+        .Height = Me.Height * 0.041
+        .Width = Me.caja2.Width * 0.6
+        .Top = Me.caja1.Top - .Height
+        .Left = Me.caja2.Left
+        .Font.Size = Me.Height * 0.029
+        .Caption = "Artículo"
+        '.Visible = False
+    End With
+    
+    With Me.Label15
+        .Height = Me.Height * 0.041
+        .Width = Me.caja2.Width * 0.4
+        .Top = Me.caja1.Top - .Height
+        .Left = Me.Label14.Left + Me.Label14.Width
+        .Font.Size = Me.Height * 0.029
+        .Caption = "Descripción"
+    End With
+    
+    With Me.Label2
+        .Height = Me.Height * 0.04
+        .Width = Me.caja1.Width * 0.18
+        .Top = Me.Height * 0.29
+        .Left = Me.Width * 0.03
+        .Caption = "Cantidad:"
+        .Font.Size = Me.Height * 0.03
+        .Font.Bold = True
+    End With
+    
+    With Me.TextBox1
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.08
+        .Top = Me.Height * 0.28
+        .Left = Me.Label2.Left + Me.Label2.Width
+        .Font.Size = Me.Height * 0.03
+    End With
+    
+    With Me.CheckBox1
+        .Height = Me.Height * 0.04
+        .Width = Me.caja1.Width * 0.3
+        .Top = Me.Height * 0.29
+        .Left = Me.Width * 0.22
+        .Font.Size = Me.Height * 0.03
+        .Font.Bold = True
+    End With
+    
+    With Me.btAgregar
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.08
+        .Top = Me.CheckBox1.Top
+        .Left = Me.cmbFiltroTipo.Left
+        .Font.Size = Me.Height * 0.025
+    End With
+    
+    With Me.btnEliminar
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.08
+        .Top = Me.CheckBox1.Top
+        .Left = Me.cmbFiltroTipo.Left + (Me.cmbFiltroTipo.Width / 2)
+        .Font.Size = Me.Height * 0.025
+    End With
+    
+    With Me.CommandButton1
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.08
+        .Top = Me.CheckBox1.Top
+        .Left = Me.cmbFiltroGrupo.Left
+        .Font.Size = Me.Height * 0.025
+    End With
+    
+    With Me.closeButton
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.08
+        .Top = Me.CheckBox1.Top
+        .Left = Me.Width * 0.85
+    End With
+End Sub
+
+Private Sub btAgregar_Click()
+    Dim condicion As String
+    Dim tama As Long
+    
+    If Me.ComboBox1.Value = "" Or Me.ComboBox1.ListIndex = -1 Then
+        MsgBox "Artículo no encontrado", vbExclamation, "Error"
+        Exit Sub
+    End If
+    
+    If Me.TextBox1.Value = "" Then
+        MsgBox "Cantidad no encontrada", vbExclamation, "Error"
+        Exit Sub
+    End If
+    
+    If Not IsNumeric(Me.TextBox1.Value) Or InStr(Me.TextBox1.Value, ".") > 0 Or Val(Me.TextBox1.Value) <= 0 Then
+        MsgBox "Cantidad no válida. Debe ingresar un número entero.", vbExclamation, "Error"
+        Exit Sub
+    End If
+    
+    If Me.cmbUsuario.Value = "" Or Me.cmbUsuario.ListIndex = -1 Then
+        MsgBox "Usuario no encontrado", vbExclamation, "Error"
+        Exit Sub
+    End If
+    
+    If Val(Me.TextBox1.Value) > 100 Then
+        If MsgBox("Se detectó un ingreso de unidades superior a 100, ¿Estas seguro de la cantidad ingresada?", vbYesNo + vbQuestion, "Confirmación") = vbNo Then
+            Exit Sub
+        End If
+    End If
+    
+    cat = Me.ComboBox1.Value
+    dog = Me.TextBox1.Value
+    check = Me.CheckBox1.Value
+    bird = Format(Now, "dd/mm/yyyy hh:mm:ss")
+    
+    tama = Me.caja1.ListCount
+    
+    If check = False Then
+        condicion = "Nuevo"
+    Else
+        condicion = "Reformulado"
+    End If
+    
+    Me.caja1.AddItem cat
+    Me.caja1.List(tama, 1) = condicion
+    Me.caja1.List(tama, 2) = dog
+    Me.caja1.List(tama, 3) = Me.cmbUsuario.Value
+    
+    Me.ComboBox1.Value = ""
+    Me.TextBox1.Value = ""
+End Sub
+
+Private Sub commandButton1_click()
+    Dim tblConsumo As ListObject
+    Dim arrNuevosConsumos() As Variant
+    Dim i As Long
+    Dim tipoMovimiento As String
+    Dim cantidad As Double
+    Dim nItems As Long
+    Dim newRow As Range
+   
+    nItems = caja1.ListCount
+    If nItems = 0 Then Exit Sub
+    
+    Set tblConsumo = consumo.ListObjects("dailyConsumption")
+    ReDim arrNuevosConsumos(1 To nItems, 1 To 6)
+    ReDim vector(1 To nItems, 1 To 4)
+    
+    For i = 1 To nItems
+        arrNuevosConsumos(i, 1) = caja1.List(i - 1, 0)
+        arrNuevosConsumos(i, 2) = caja1.List(i - 1, 1)
+        
+        cantidad = Val(caja1.List(i - 1, 2))
+        If modo = True Then
+            tipoMovimiento = "Retiro"
+            cantidad = -cantidad
+        Else
+            tipoMovimiento = "Entrada"
+        End If
+        
+        arrNuevosConsumos(i, 3) = tipoMovimiento
+        arrNuevosConsumos(i, 4) = cantidad
+        arrNuevosConsumos(i, 5) = Now
+        arrNuevosConsumos(i, 6) = caja1.List(i - 1, 3)
+        
+        vector(i, 1) = arrNuevosConsumos(i, 1)
+        vector(i, 2) = arrNuevosConsumos(i, 2)
+        vector(i, 3) = Abs(cantidad)
+        vector(i, 4) = arrNuevosConsumos(i, 6)
+    Next i
+    
+    Set newRow = tblConsumo.ListRows.Add.Range
+    If nItems > 1 Then
+        newRow.Resize(nItems, 6).Value = arrNuevosConsumos
+    Else
+        newRow.Resize(1, 6).Value = arrNuevosConsumos
+    End If
+    
+    tblConsumo.DataBodyRange.Columns(5).NumberFormat = "dd/mm/yyyy hh:mm:ss"
+    
+    Me.ComboBox1.Value = ""
+    Me.TextBox1.Value = ""
+    Me.CheckBox1.Value = False
+    Me.cmbUsuario.Value = ""
+    
+    Call consumos
+    
+    Unload Me
+    Almacen.Show vbModeless
+End Sub
+
+Sub consumos()
+    Dim tblExistencias As ListObject
+    Dim vExistencias As Variant
+    Dim dictRows As Object
+    Dim i As Long, filaReal As Long
+    Dim artBuscar As String
+    
+    Set tblExistencias = Exist.ListObjects("tabExistencias")
+    If tblExistencias.ListRows.Count = 0 Then Exit Sub
+    
+    vExistencias = tblExistencias.DataBodyRange.Value
+    Set dictRows = CreateObject("Scripting.Dictionary")
+    dictRows.CompareMode = vbTextCompare
+    
+    For i = 1 To UBound(vExistencias, 1)
+        If Not IsEmpty(vExistencias(i, 4)) Then
+            dictRows(CStr(vExistencias(i, 4))) = i
+        End If
+    Next i
+    
+    For i = 1 To UBound(vector, 1)
+        artBuscar = CStr(vector(i, 1))
+        
+        If dictRows.Exists(artBuscar) Then
+            filaReal = dictRows(artBuscar)
+            
+            If vector(i, 2) = "Nuevo" Then
+                If modo Then
+                    vExistencias(filaReal, 8) = vExistencias(filaReal, 8) - vector(i, 3)
+                Else
+                    vExistencias(filaReal, 8) = vExistencias(filaReal, 8) + vector(i, 3)
+                End If
+            Else
+                If modo Then
+                    vExistencias(filaReal, 9) = vExistencias(filaReal, 9) - vector(i, 3)
+                Else
+                    vExistencias(filaReal, 9) = vExistencias(filaReal, 9) + vector(i, 3)
+                End If
+            End If
+        End If
+    Next i
+    
+    tblExistencias.DataBodyRange.Value = vExistencias
+    Me.caja1.Clear
+End Sub
+
+
+Private Sub closeButton_click()
+    Unload Me
+    Almacen.Show vbModeless
+End Sub
+
+Private Sub caja1_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    If Me.caja1.ListIndex <> -1 Then
+        Me.caja1.RemoveItem Me.caja1.ListIndex
+    End If
+End Sub
+
+Private Sub btnEliminar_Click()
+    If Me.caja1.ListIndex <> -1 Then
+        Me.caja1.RemoveItem Me.caja1.ListIndex
+    End If
+End Sub
+
+Sub FiltrarCaja2(ByVal sector As String)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim i As Long, k As Long
+    Dim tipoSel As String, grupoSel As String
+    Dim tipoFila As String, grupoFila As String, artFila As String, artFila2 As String
+    Dim arrArt() As Variant
+    Dim cuenta As Long
+    
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then Exit Sub
+    vData = tbl.DataBodyRange.Value
+    
+    tipoSel = Me.cmbFiltroTipo.Value
+    grupoSel = Me.cmbFiltroGrupo.Value
+    
+    cuenta = 0
+    For i = 1 To UBound(vData, 1)
+        tipoFila = CStr(vData(i, 1))
+        grupoFila = CStr(vData(i, 6))
+        If (tipoSel = "" Or tipoFila = tipoSel) And (grupoSel = "" Or grupoFila = grupoSel) Then
+            cuenta = cuenta + 1
+        End If
+    Next i
+    
+    If cuenta = 0 Then
+        bloqueaEventos = True
+        If sector = "Tipo" Then
+            Me.cmbFiltroGrupo.Value = ""
+            grupoSel = ""
+        ElseIf sector = "Grupo" Then
+            Me.cmbFiltroTipo.Value = ""
+            tipoSel = ""
+        End If
+        bloqueaEventos = False
+        
+        cuenta = 0
+        For i = 1 To UBound(vData, 1)
+            tipoFila = CStr(vData(i, 1))
+            grupoFila = CStr(vData(i, 6))
+            If (tipoSel = "" Or tipoFila = tipoSel) And (grupoSel = "" Or grupoFila = grupoSel) Then
+                cuenta = cuenta + 1
+            End If
+        Next i
+    End If
+    
+    Me.caja2.Clear
+    If cuenta > 0 Then
+        ReDim arrArt(1 To cuenta, 1 To 2)
+        k = 1
+        For i = 1 To UBound(vData, 1)
+            tipoFila = CStr(vData(i, 1))
+            grupoFila = CStr(vData(i, 6))
+            artFila = CStr(vData(i, 4))
+            artFila2 = CStr(vData(i, 20))
+            If (tipoSel = "" Or tipoFila = tipoSel) And (grupoSel = "" Or grupoFila = grupoSel) Then
+                arrArt(k, 1) = artFila
+                arrArt(k, 2) = artFila2
+                k = k + 1
+            End If
+        Next i
+        Me.caja2.List = arrArt
+    End If
+End Sub
+
+Private Sub cmbFiltroTipo_Change()
+    If bloqueaEventos Then Exit Sub
+    Call FiltrarCaja2("Tipo")
+End Sub
+
+Private Sub cmbFiltroGrupo_Change()
+    If bloqueaEventos Then Exit Sub
+    Call FiltrarCaja2("Grupo")
+End Sub
+
+Private Sub btnLimpiarCaja2_Click()
+    bloqueaEventos = True
+    Me.cmbFiltroTipo.Value = ""
+    Me.cmbFiltroGrupo.Value = ""
+    bloqueaEventos = False
+    Call FiltrarCaja2("")
+End Sub
+
+Private Sub caja2_Click()
+    If Me.caja2.ListIndex <> -1 Then
+        Me.ComboBox1.Value = Me.caja2.Value
+    End If
+End Sub
+
+Private Sub UserForm_Terminate()
+End Sub
+
+
+
+
