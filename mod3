@@ -1,0 +1,59 @@
+Sub ConsolidarElementos()
+    Dim wsOrigen As Worksheet
+    Dim wsDestino As Worksheet
+    Dim dict As Object
+    Dim ultFila As Long
+    Dim i As Long
+    Dim elemento As String
+    Dim fecha As Variant
+    Dim cantidad As Double
+    Dim clave As String
+    Dim varKey As Variant
+    Dim partes() As String
+    Dim filaDestino As Long
+
+    Set wsOrigen = ActiveSheet
+    Set wsDestino = ThisWorkbook.Sheets.Add(after:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+    
+    On Error Resume Next
+    wsDestino.Name = "Resumen_" & Format(Now, "hhmmss")
+    On Error GoTo 0
+
+    Set dict = CreateObject("Scripting.Dictionary")
+    ultFila = wsOrigen.Range("A" & wsOrigen.Rows.Count).End(xlUp).row
+
+    For i = 2 To ultFila
+        elemento = CStr(wsOrigen.Cells(i, 1).Value)
+        fecha = wsOrigen.Cells(i, 6).Value
+        cantidad = Val(wsOrigen.Cells(i, 5).Value)
+
+        If elemento <> "" And IsDate(fecha) Then
+            clave = elemento & "|" & CStr(CDate(fecha))
+            If dict.Exists(clave) Then
+                dict(clave) = dict(clave) + cantidad
+            Else
+                dict.Add clave, cantidad
+            End If
+        End If
+    Next i
+
+    wsDestino.Cells(1, 1).Value = "Elemento"
+    wsDestino.Cells(1, 2).Value = "Fecha"
+    wsDestino.Cells(1, 3).Value = "Cantidad Total"
+
+    filaDestino = 2
+    For Each varKey In dict.keys
+        partes = Split(varKey, "|")
+        
+        wsDestino.Cells(filaDestino, 1).Value = partes(0)
+        
+        With wsDestino.Cells(filaDestino, 2)
+            .Value = CDate(partes(1))
+            .NumberFormat = "dd/mm/yyyy"
+        End With
+        
+        wsDestino.Cells(filaDestino, 3).Value = dict(varKey)
+        
+        filaDestino = filaDestino + 1
+    Next varKey
+End Sub
