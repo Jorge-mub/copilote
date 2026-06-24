@@ -1817,7 +1817,7 @@ Sub RedimensionarPage3()
         .Font.Size = .Height * 0.46
     End With
 End Sub
-
+'al
 
 
 
