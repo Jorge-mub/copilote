@@ -393,7 +393,7 @@ Public Sub plantilla(frm As Object)
         MsgBox "Selecciona un artículo.", vbExclamation, "Error"
     End If
 End Sub
-
+'al
 
 
 
