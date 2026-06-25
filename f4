@@ -38,10 +38,14 @@ Private Sub UserForm_Initialize()
     Dim cell As Range
     Dim fin As Long
     Dim tblE As ListObject
+    Dim tblG As ListObject
     Dim vE As Variant
+    Dim vG As Variant
     Dim dictT As Object, dictG As Object
     Dim iE As Long, kE As Variant
-
+    Dim alto As Long
+    Dim ancho As Long
+    
     On Error Resume Next
     If Exist.ListObjects("tabExistencias").AutoFilter.FilterMode Then
         Exist.ListObjects("tabExistencias").AutoFilter.ShowAllData
@@ -56,10 +60,19 @@ Private Sub UserForm_Initialize()
     
     currentDate = Date
     Me.startupposition = 0
-    Me.Height = Application.ActiveWindow.Height * 0.85
-    Me.Width = Application.ActiveWindow.Width * 0.8
-    Me.Top = Application.ActiveWindow.Top + Application.ActiveWindow.Height * 0.075
-    Me.Left = Application.ActiveWindow.Left + Application.ActiveWindow.Width * 0.1
+    
+    alto = Application.ActiveWindow.Height
+    ancho = Application.ActiveWindow.Width
+    
+    If alto < 552 Or ancho < 1036.5 Then
+        alto = 552
+        ancho = 1036.5
+    End If
+    
+    Me.Height = alto * 0.85
+    Me.Width = ancho * 0.9
+    Me.Top = Application.ActiveWindow.Top + alto * 0.075
+    Me.Left = Application.ActiveWindow.Left + ancho * 0.05
     
     With Me.ComboBox1
         fin = Exist.ListObjects("tabExistencias").ListRows.Count + 1
@@ -100,16 +113,22 @@ Private Sub UserForm_Initialize()
     
     Set tblE = Exist.ListObjects("tabExistencias")
     If tblE.ListRows.Count > 0 Then
+        Call tablaorden(Exist, "tabExistencias", 1)
         vE = tblE.DataBodyRange.Value
+        Call tablaorden(Exist, "tabExistencias", 6)
+        vG = tblE.DataBodyRange.Value
         Set dictT = CreateObject("Scripting.Dictionary")
         Set dictG = CreateObject("Scripting.Dictionary")
+        
+        Call tablaorden(Exist, "tabExistencias", 1)
+        Call tablaorden(Exist, "tabExistencias", 6)
         
         For iE = 1 To UBound(vE, 1)
             If Not IsEmpty(vE(iE, 1)) And CStr(vE(iE, 1)) <> "" Then
                 dictT(CStr(vE(iE, 1))) = 1
             End If
-            If Not IsEmpty(vE(iE, 6)) And CStr(vE(iE, 6)) <> "" Then
-                dictG(CStr(vE(iE, 6))) = 1
+            If Not IsEmpty(vG(iE, 6)) And CStr(vG(iE, 6)) <> "" Then
+                dictG(CStr(vG(iE, 6))) = 1
             End If
         Next iE
         
@@ -122,6 +141,8 @@ Private Sub UserForm_Initialize()
         For Each kE In dictG.keys
             Me.cmbFiltroGrupo.AddItem kE
         Next kE
+        
+        Call tablaorden(Exist, "tabExistencias", 4)
     End If
     
     Set ws = ThisWorkbook.Sheets("ConsumoDia")
@@ -131,6 +152,20 @@ Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub UserForm_Activate()
+    Dim letraCaja As Long
+    Dim letraObjeto As Long
+    Dim letraCabeceras As Long
+    Dim letraTitulo As Long
+    Dim letraBoton As Long
+    Dim letraCheck As Long
+
+    letraCaja = Me.Height * 0.02
+    letraObjeto = Me.Height * 0.024
+    letraCabeceras = Me.Height * 0.024
+    letraTitulo = Me.Height * 0.024
+    letraBoton = Me.Height * 0.03
+    letraCheck = Me.Height * 0.03
+
     If modo Then
         Me.Caption = "Descuento de Inventario"
         Me.Label10.Visible = True
@@ -165,15 +200,15 @@ Private Sub UserForm_Activate()
     
     With Me.caja1
         .Height = Me.Height * 0.5
-        .Width = Me.Width * 0.5
+        .Width = Me.Width * 0.45
         .Top = Me.Height * 0.4
-        .Left = Me.Width * 0.47
+        .Left = Me.Width * 0.52
         .ColumnCount = 4
         .ColumnWidths = Me.caja1.Width * 0.45 & ";" & _
                         Me.caja1.Width * 0.2 & ";" & _
                         Me.caja1.Width * 0.1 & ";" & _
                         Me.caja1.Width * 0.2
-        .Font.Size = Me.Height * 0.026
+        .Font.Size = letraCaja
         .TextAlign = fmTextAlignCenter
     End With
     
@@ -182,7 +217,7 @@ Private Sub UserForm_Activate()
         .Width = Me.caja1.Width * 0.45
         .Top = Me.caja1.Top - .Height
         .Left = Me.caja1.Left
-        .Font.Size = Me.Height * 0.029
+        .Font.Size = letraCabeceras
         .Caption = "Artículo"
         '.Visible = False
     End With
@@ -192,7 +227,7 @@ Private Sub UserForm_Activate()
         .Width = Me.caja1.Width * 0.2
         .Top = Me.caja1.Top - .Height
         .Left = Me.lbl01.Left + Me.lbl01.Width
-        .Font.Size = Me.Height * 0.029
+        .Font.Size = letraCabeceras
         .Caption = "Condición"
     End With
     
@@ -201,7 +236,7 @@ Private Sub UserForm_Activate()
         .Width = Me.caja1.Width * 0.1
         .Top = Me.caja1.Top - .Height
         .Left = Me.lbl02.Left + Me.lbl02.Width
-        .Font.Size = Me.Height * 0.029
+        .Font.Size = letraCabeceras
         .Caption = "QTY"
     End With
     
@@ -210,7 +245,7 @@ Private Sub UserForm_Activate()
         .Width = Me.caja1.Width * 0.25
         .Top = Me.caja1.Top - .Height
         .Left = Me.lbl03.Left + Me.lbl03.Width
-        .Font.Size = Me.Height * 0.029
+        .Font.Size = letraCabeceras
         .Caption = "Usuario"
     End With
     
@@ -220,29 +255,29 @@ Private Sub UserForm_Activate()
         .Width = Me.caja1.Width * 0.2
         .Top = Me.caja1.Top - .Height
         .Left = Me.lbl04.Left + Me.lbl04.Width
-        .Font.Size = Me.Height * 0.029
+        .Font.Size = letraCabeceras
         .Caption = "Usuario"
         .Visible = False
     End With
     On Error GoTo 0
     
     With Me.Label3
-        .Height = Me.Height * 0.04
+        .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.3
         .Top = Me.Height * 0.07
         .Left = Me.Width * 0.03
         .Caption = "Usuario"
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraTitulo
         .Font.Bold = True
     End With
     
     With Me.Label12
-        .Height = Me.Height * 0.04
+        .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.3
-        .Top = Me.Height * 0.17
+        .Top = Me.Height * 0.15
         .Left = Me.Width * 0.03
         .Caption = "Buscar artículo"
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraTitulo
         .Font.Bold = True
     End With
     
@@ -259,7 +294,7 @@ Private Sub UserForm_Activate()
         .Width = Me.caja1.Width * 0.3
         .Top = Me.Height * 0.17
         .Left = Me.Width * 0.41
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraTitulo
         .Font.Bold = True
         .Caption = "Filtro tipo"
     End With
@@ -269,43 +304,43 @@ Private Sub UserForm_Activate()
         .Width = Me.caja1.Width * 0.3
         .Top = Me.Height * 0.17
         .Left = Me.Width * 0.7
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraTitulo
         .Font.Bold = True
         .Caption = "Filtro Grupo"
     End With
     
     With Me.ComboBox1
-        .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.34
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.22
         .Top = Me.Label12.Top + Me.Label12.Height
         .Left = Me.Width * 0.03
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraObjeto
     End With
     
     With Me.cmbUsuario
-        .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.3
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.2
         .Top = Me.Label3.Top + Me.Label3.Height
         .Left = Me.Width * 0.03
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraObjeto
         '.BackColor = &HC0E0FF
         '.BackColor = 12648384
     End With
     
     With Me.cmbFiltroTipo
-        .Height = Me.Height * 0.055
+        .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.25
         .Top = Me.Label1.Top + Me.Label1.Height
         .Left = Me.Label1.Left
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraObjeto
     End With
     
     With Me.cmbFiltroGrupo
-        .Height = Me.Height * 0.055
+        .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.25
         .Top = Me.Label13.Top + Me.Label13.Height
         .Left = Me.Label13.Left
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraObjeto
     End With
     
     'With Me.btMas
@@ -313,7 +348,7 @@ Private Sub UserForm_Activate()
     '    .Width = Me.Width * 0.038
     '    .Top = Me.Height * 0.15
     '    .Left = Me.Width * 0.255
-    '    .Font.Size = Me.Height * 0.03
+    '    .Font.Size = letraBoton
     'End With
     
     'With Me.btMenos
@@ -321,37 +356,37 @@ Private Sub UserForm_Activate()
     '    .Width = Me.Width * 0.038
     '    .Top = Me.Height * 0.15
     '    .Left = Me.Width * 0.31
-    '    .Font.Size = Me.Height * 0.03
+    '    .Font.Size = letraBoton
     'End With
     
     With Me.caja2
         .Height = Me.Height * 0.5
-        .Width = Me.Width * 0.42
+        .Width = Me.Width * 0.47
         .Top = Me.Height * 0.4
         .Left = Me.Width * 0.03
         .ColumnCount = 2
-        .ColumnWidths = Me.caja2.Width * 0.6 & ";" & _
-                        Me.caja2.Width * 0.39 & ";"
-        .Font.Size = Me.Height * 0.026
+        .ColumnWidths = Me.caja2.Width * 0.45 & ";" & _
+                        Me.caja2.Width * 0.54 & ";"
+        .Font.Size = letraCaja
         .TextAlign = fmTextAlignCenter
     End With
     
     With Me.Label14
         .Height = Me.Height * 0.041
-        .Width = Me.caja2.Width * 0.6
+        .Width = Me.caja2.Width * 0.45
         .Top = Me.caja1.Top - .Height
         .Left = Me.caja2.Left
-        .Font.Size = Me.Height * 0.029
+        .Font.Size = letraCabeceras
         .Caption = "Artículo"
         '.Visible = False
     End With
     
     With Me.Label15
         .Height = Me.Height * 0.041
-        .Width = Me.caja2.Width * 0.4
+        .Width = Me.caja2.Width * 0.55
         .Top = Me.caja1.Top - .Height
         .Left = Me.Label14.Left + Me.Label14.Width
-        .Font.Size = Me.Height * 0.029
+        .Font.Size = letraCabeceras
         .Caption = "Descripción"
     End With
     
@@ -361,16 +396,16 @@ Private Sub UserForm_Activate()
         .Top = Me.Height * 0.29
         .Left = Me.Width * 0.03
         .Caption = "Cantidad:"
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraTitulo
         .Font.Bold = True
     End With
     
     With Me.TextBox1
-        .Height = Me.Height * 0.055
+        .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.08
         .Top = Me.Height * 0.28
         .Left = Me.Label2.Left + Me.Label2.Width
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraObjeto
     End With
     
     With Me.CheckBox1
@@ -378,7 +413,7 @@ Private Sub UserForm_Activate()
         .Width = Me.caja1.Width * 0.3
         .Top = Me.Height * 0.29
         .Left = Me.Width * 0.22
-        .Font.Size = Me.Height * 0.03
+        .Font.Size = letraCheck
         .Font.Bold = True
     End With
     
@@ -387,7 +422,7 @@ Private Sub UserForm_Activate()
         .Width = Me.Width * 0.08
         .Top = Me.CheckBox1.Top
         .Left = Me.cmbFiltroTipo.Left
-        .Font.Size = Me.Height * 0.025
+        .Font.Size = letraBoton
     End With
     
     With Me.btnEliminar
@@ -395,7 +430,7 @@ Private Sub UserForm_Activate()
         .Width = Me.Width * 0.08
         .Top = Me.CheckBox1.Top
         .Left = Me.cmbFiltroTipo.Left + (Me.cmbFiltroTipo.Width / 2)
-        .Font.Size = Me.Height * 0.025
+        .Font.Size = letraBoton
     End With
     
     With Me.CommandButton1
@@ -403,7 +438,7 @@ Private Sub UserForm_Activate()
         .Width = Me.Width * 0.08
         .Top = Me.CheckBox1.Top
         .Left = Me.cmbFiltroGrupo.Left
-        .Font.Size = Me.Height * 0.025
+        .Font.Size = letraBoton
     End With
     
     With Me.closeButton
@@ -424,7 +459,7 @@ Private Sub btAgregar_Click()
     End If
     
     If Me.TextBox1.Value = "" Then
-        MsgBox "Cantidad no encontrada", vbExclamation, "Error"
+        MsgBox "Cantidad vacía", vbExclamation, "Error"
         Exit Sub
     End If
     
@@ -439,7 +474,7 @@ Private Sub btAgregar_Click()
     End If
     
     If Val(Me.TextBox1.Value) > 100 Then
-        If MsgBox("Se detectó un ingreso de unidades superior a 100, ¿Estas seguro de la cantidad ingresada?", vbYesNo + vbQuestion, "Confirmación") = vbNo Then
+        If MsgBox("Cantidad de unidades superior a 100, ¿Estas seguro de la cantidad ingresada?", vbYesNo + vbQuestion, "Confirmación") = vbNo Then
             Exit Sub
         End If
     End If
@@ -600,8 +635,8 @@ Sub FiltrarCaja2(ByVal sector As String)
     
     Set tbl = Exist.ListObjects("tabExistencias")
     If tbl.ListRows.Count < 1 Then Exit Sub
-    vData = tbl.DataBodyRange.Value
     
+    vData = tbl.DataBodyRange.Value
     tipoSel = Me.cmbFiltroTipo.Value
     grupoSel = Me.cmbFiltroGrupo.Value
     
@@ -643,7 +678,7 @@ Sub FiltrarCaja2(ByVal sector As String)
             tipoFila = CStr(vData(i, 1))
             grupoFila = CStr(vData(i, 6))
             artFila = CStr(vData(i, 4))
-            artFila2 = CStr(vData(i, 20))
+            artFila2 = CStr(vData(i, 21))
             If (tipoSel = "" Or tipoFila = tipoSel) And (grupoSel = "" Or grupoFila = grupoSel) Then
                 arrArt(k, 1) = artFila
                 arrArt(k, 2) = artFila2
@@ -678,10 +713,22 @@ Private Sub caja2_Click()
     End If
 End Sub
 
-Private Sub UserForm_Terminate()
+Private Sub tablaorden(ByVal hoja As Worksheet, ByVal tabla As String, ByVal pilar As Long)
+    Dim tbl As ListObject
+    Set tbl = hoja.ListObjects(tabla)
+    tbl.AutoFilter.ShowAllData
+    With tbl.Sort
+        .SortFields.Clear
+        .SortFields.Add Key:=tbl.ListColumns(pilar).DataBodyRange, _
+                        SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+        .Header = xlYes
+        .Apply
+    End With
 End Sub
 
 
 
 
-'al
+
+
+'juv
