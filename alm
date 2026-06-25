@@ -80,11 +80,14 @@ Private Sub UserForm_Activate()
     Me.lblStock2.Visible = False
     Me.lblStock3.Visible = False
     Me.MultiPage1.Pages.item(2).Visible = False
+    '== Y ==
     '552
     '1036.5
 
+    '== X ==
     '786
     '1452
+    
     alto = Application.ActiveWindow.Height
     ancho = Application.ActiveWindow.Width
     
@@ -96,10 +99,10 @@ Private Sub UserForm_Activate()
     With Me
         .Height = alto * 0.85
         .Width = ancho * 0.85
-        .Top = 0
-        .Left = 0
-        '.Top = Application.ActiveWindow.Top + alto * 0.075
-        '.Left = Application.ActiveWindow.Left + ancho * 0.075
+        '.Top = 0
+        '.Left = 0
+        .Top = Application.ActiveWindow.Top + alto * 0.075
+        .Left = Application.ActiveWindow.Left + ancho * 0.075
     End With
     
     With Me.MultiPage1
@@ -1817,7 +1820,8 @@ Sub RedimensionarPage3()
         .Font.Size = .Height * 0.46
     End With
 End Sub
-'al
 
 
 
+
+'juv
