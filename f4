@@ -61,8 +61,11 @@ Private Sub UserForm_Initialize()
     currentDate = Date
     Me.startupposition = 0
     
-    alto = Application.ActiveWindow.Height
-    ancho = Application.ActiveWindow.Width
+    'alto = Application.ActiveWindow.Height
+    'ancho = Application.ActiveWindow.Width
+    
+    alto = Application.Height
+    ancho = Application.Width
     
     If alto < 552 Or ancho < 1036.5 Then
         alto = 552
@@ -199,7 +202,7 @@ Private Sub UserForm_Activate()
     End With
     
     With Me.caja1
-        .Height = Me.Height * 0.5
+        .Height = Me.Height * 0.45
         .Width = Me.Width * 0.45
         .Top = Me.Height * 0.4
         .Left = Me.Width * 0.52
@@ -290,9 +293,9 @@ Private Sub UserForm_Activate()
     'End With
     
     With Me.Label1
-        .Height = Me.Height * 0.04
+        .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.3
-        .Top = Me.Height * 0.17
+        .Top = Me.Label3.Top
         .Left = Me.Width * 0.41
         .Font.Size = letraTitulo
         .Font.Bold = True
@@ -300,10 +303,10 @@ Private Sub UserForm_Activate()
     End With
     
     With Me.Label13
-        .Height = Me.Height * 0.04
+        .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.3
-        .Top = Me.Height * 0.17
-        .Left = Me.Width * 0.7
+        .Top = Me.Label12.Top
+        .Left = Me.Label1.Left
         .Font.Size = letraTitulo
         .Font.Bold = True
         .Caption = "Filtro Grupo"
@@ -329,7 +332,7 @@ Private Sub UserForm_Activate()
     
     With Me.cmbFiltroTipo
         .Height = Me.Height * 0.0415
-        .Width = Me.Width * 0.25
+        .Width = Me.Width * 0.165
         .Top = Me.Label1.Top + Me.Label1.Height
         .Left = Me.Label1.Left
         .Font.Size = letraObjeto
@@ -343,24 +346,8 @@ Private Sub UserForm_Activate()
         .Font.Size = letraObjeto
     End With
     
-    'With Me.btMas
-    '    .Height = Me.Height * 0.05
-    '    .Width = Me.Width * 0.038
-    '    .Top = Me.Height * 0.15
-    '    .Left = Me.Width * 0.255
-    '    .Font.Size = letraBoton
-    'End With
-    
-    'With Me.btMenos
-    '    .Height = Me.Height * 0.05
-    '    .Width = Me.Width * 0.038
-    '    .Top = Me.Height * 0.15
-    '    .Left = Me.Width * 0.31
-    '    .Font.Size = letraBoton
-    'End With
-    
     With Me.caja2
-        .Height = Me.Height * 0.5
+        .Height = Me.Height * 0.45
         .Width = Me.Width * 0.47
         .Top = Me.Height * 0.4
         .Left = Me.Width * 0.03
@@ -368,7 +355,7 @@ Private Sub UserForm_Activate()
         .ColumnWidths = Me.caja2.Width * 0.45 & ";" & _
                         Me.caja2.Width * 0.54 & ";"
         .Font.Size = letraCaja
-        .TextAlign = fmTextAlignCenter
+        .TextAlign = fmTextAlignLeft
     End With
     
     With Me.Label14
@@ -392,8 +379,8 @@ Private Sub UserForm_Activate()
     
     With Me.Label2
         .Height = Me.Height * 0.04
-        .Width = Me.caja1.Width * 0.18
-        .Top = Me.Height * 0.29
+        .Width = Me.caja1.Width * 0.14
+        .Top = Me.Height * 0.245
         .Left = Me.Width * 0.03
         .Caption = "Cantidad:"
         .Font.Size = letraTitulo
@@ -402,51 +389,82 @@ Private Sub UserForm_Activate()
     
     With Me.TextBox1
         .Height = Me.Height * 0.0415
-        .Width = Me.Width * 0.08
-        .Top = Me.Height * 0.28
+        .Width = Me.Width * 0.03
+        .Top = Me.Height * 0.24
         .Left = Me.Label2.Left + Me.Label2.Width
         .Font.Size = letraObjeto
+        .Value = 0
+    End With
+    
+    With Me.btMenos
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.04
+        .Top = Me.Height * 0.24
+        .Left = Me.TextBox1.Left + Me.TextBox1.Width * 1.3
+        .Font.Size = Me.Height * 0.025
+        .Caption = "6"
+        .Accelerator = "q"
+    End With
+    
+    With Me.btMas
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.04
+        .Top = Me.Height * 0.24
+        .Left = Me.btMenos.Left + Me.btMenos.Width * 1.2
+        .Font.Size = Me.Height * 0.025
+        .Caption = "5"
+        .Accelerator = "w"
     End With
     
     With Me.CheckBox1
         .Height = Me.Height * 0.04
-        .Width = Me.caja1.Width * 0.3
-        .Top = Me.Height * 0.29
-        .Left = Me.Width * 0.22
+        .Width = Me.caja1.Width * 0.25
+        .Top = Me.Height * 0.24
+        .Left = Me.btMas.Left + Me.btMas.Width * 1.45
         .Font.Size = letraCheck
         .Font.Bold = True
     End With
     
     With Me.btAgregar
         .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.08
-        .Top = Me.CheckBox1.Top
-        .Left = Me.cmbFiltroTipo.Left
+        .Width = Me.Width * 0.2
+        .Top = Me.Height * 0.292
+        .Left = Me.caja2.Left
         .Font.Size = letraBoton
     End With
     
     With Me.btnEliminar
         .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.08
-        .Top = Me.CheckBox1.Top
-        .Left = Me.cmbFiltroTipo.Left + (Me.cmbFiltroTipo.Width / 2)
+        .Width = Me.Width * 0.2
+        .Top = Me.btAgregar.Top
+        .Left = Me.btAgregar.Left + Me.btAgregar.Width * 1.1
         .Font.Size = letraBoton
+        .Caption = "Quitar"
     End With
     
     With Me.CommandButton1
         .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.08
-        .Top = Me.CheckBox1.Top
-        .Left = Me.cmbFiltroGrupo.Left
+        .Width = Me.Width * 0.25
+        .Top = Me.Height * 0.85
+        .Left = (Me.Width / 2) - (.Width / 2)
         .Font.Size = letraBoton
     End With
     
     With Me.closeButton
         .Height = Me.Height * 0.055
         .Width = Me.Width * 0.08
-        .Top = Me.CheckBox1.Top
+        .Top = Me.btnEliminar.Top
         .Left = Me.Width * 0.85
+        .Visible = False
     End With
+End Sub
+
+Private Sub btMenos_click()
+    If Me.TextBox1.Value > 0 Then Me.TextBox1.Value = CStr(CInt(Me.TextBox1.Value) - 1)
+End Sub
+
+Private Sub btMas_click()
+    Me.TextBox1.Value = CStr(CInt(Me.TextBox1.Value) + 1)
 End Sub
 
 Private Sub btAgregar_Click()
@@ -556,8 +574,10 @@ Private Sub commandButton1_click()
     
     Call consumos
     
-    Unload Me
-    Almacen.Show vbModeless
+    Application.ThisWorkbook.Save
+    
+    'Unload Me
+    'Almacen.Show vbModeless
 End Sub
 
 Sub consumos()
@@ -605,7 +625,6 @@ Sub consumos()
     tblExistencias.DataBodyRange.Value = vExistencias
     Me.caja1.Clear
 End Sub
-
 
 Private Sub closeButton_click()
     Unload Me
@@ -710,6 +729,9 @@ End Sub
 Private Sub caja2_Click()
     If Me.caja2.ListIndex <> -1 Then
         Me.ComboBox1.Value = Me.caja2.Value
+        If Me.TextBox1.Value < 1 Then
+            Me.TextBox1.Value = 1
+        End If
     End If
 End Sub
 
@@ -730,5 +752,4 @@ End Sub
 
 
 
-
-'juv
+'kalo2
