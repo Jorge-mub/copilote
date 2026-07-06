@@ -34,6 +34,23 @@ Private Sub textbox1_change()
     End If
 End Sub
 
+Private Sub TextBox2_Change()
+    If bloqueaEventos Then Exit Sub
+    Call FiltrarCaja2("")
+End Sub
+
+Private Function GetControlTextValue(controlName As String) As String
+    Dim ctl As Object
+    On Error Resume Next
+    Set ctl = Me.Controls(controlName)
+    If Err.Number = 0 Then
+        GetControlTextValue = Trim(CStr(ctl.Value))
+    Else
+        GetControlTextValue = ""
+    End If
+    On Error GoTo 0
+End Function
+
 Private Sub UserForm_Initialize()
     Dim cell As Range
     Dim fin As Long
@@ -42,6 +59,7 @@ Private Sub UserForm_Initialize()
     Dim vE As Variant
     Dim vG As Variant
     Dim dictT As Object, dictG As Object
+    Dim sortedKeys As Variant
     Dim iE As Long, kE As Variant
     Dim alto As Long
     Dim ancho As Long
@@ -113,6 +131,10 @@ Private Sub UserForm_Initialize()
     End With
     
     Me.TextBox1.BackColor = &HC0E0FF
+    On Error Resume Next
+    Me.TextBox2.BackColor = &HC0E0FF
+    Me.TextBox2.Value = ""
+    On Error GoTo 0
     
     Set tblE = Exist.ListObjects("tabExistencias")
     If tblE.ListRows.Count > 0 Then
@@ -136,14 +158,20 @@ Private Sub UserForm_Initialize()
         Next iE
         
         Me.cmbFiltroTipo.Clear
-        For Each kE In dictT.keys
-            Me.cmbFiltroTipo.AddItem kE
-        Next kE
+        If dictT.Count > 0 Then
+            sortedKeys = SortedKeysFromDict(dictT)
+            For iE = LBound(sortedKeys) To UBound(sortedKeys)
+                Me.cmbFiltroTipo.AddItem sortedKeys(iE)
+            Next iE
+        End If
         
         Me.cmbFiltroGrupo.Clear
-        For Each kE In dictG.keys
-            Me.cmbFiltroGrupo.AddItem kE
-        Next kE
+        If dictG.Count > 0 Then
+            sortedKeys = SortedKeysFromDict(dictG)
+            For iE = LBound(sortedKeys) To UBound(sortedKeys)
+                Me.cmbFiltroGrupo.AddItem sortedKeys(iE)
+            Next iE
+        End If
         
         Call tablaorden(Exist, "tabExistencias", 4)
     End If
@@ -153,6 +181,26 @@ Private Sub UserForm_Initialize()
     
     Call FiltrarCaja2("")
 End Sub
+
+Function SortedKeysFromDict(ByVal dictObj As Object) As Variant
+    Dim keysArr As Variant
+    Dim i As Long, j As Long
+    Dim temp As String
+
+    keysArr = dictObj.keys
+    If UBound(keysArr) > LBound(keysArr) Then
+        For i = LBound(keysArr) To UBound(keysArr) - 1
+            For j = i + 1 To UBound(keysArr)
+                If CStr(keysArr(i)) > CStr(keysArr(j)) Then
+                    temp = keysArr(i)
+                    keysArr(i) = keysArr(j)
+                    keysArr(j) = temp
+                End If
+            Next j
+        Next i
+    End If
+    SortedKeysFromDict = keysArr
+End Function
 
 Private Sub UserForm_Activate()
     Dim letraCaja As Long
@@ -460,29 +508,43 @@ Private Sub UserForm_Activate()
 End Sub
 
 Private Sub btMenos_click()
+    If Me.TextBox1.Value = "" Or Me.TextBox1.Value < 0 Then Me.TextBox1.Value = 0
     If Me.TextBox1.Value > 0 Then Me.TextBox1.Value = CStr(CInt(Me.TextBox1.Value) - 1)
 End Sub
 
 Private Sub btMas_click()
-    Me.TextBox1.Value = CStr(CInt(Me.TextBox1.Value) + 1)
+    If Me.TextBox1.Value < 0 Or Me.TextBox1.Value = "" Then
+        Me.TextBox1.Value = 1
+    Else
+        Me.TextBox1.Value = CStr(CInt(Me.TextBox1.Value) + 1)
+    End If
 End Sub
 
 Private Sub btAgregar_Click()
     Dim condicion As String
     Dim tama As Long
+    Dim numero As String
+
+    numero = Trim(Me.TextBox1.Value)
     
     If Me.ComboBox1.Value = "" Or Me.ComboBox1.ListIndex = -1 Then
         MsgBox "Artículo no encontrado", vbExclamation, "Error"
         Exit Sub
     End If
     
-    If Me.TextBox1.Value = "" Then
+    If numero = "" Then
         MsgBox "Cantidad vacía", vbExclamation, "Error"
         Exit Sub
     End If
     
-    If Not IsNumeric(Me.TextBox1.Value) Or InStr(Me.TextBox1.Value, ".") > 0 Or Val(Me.TextBox1.Value) <= 0 Then
-        MsgBox "Cantidad no válida. Debe ingresar un número entero.", vbExclamation, "Error"
+    'If Not IsNumeric(Me.TextBox1.Value) Or InStr(Me.TextBox1.Value, ".") > 0 Or Val(Me.TextBox1.Value) <= 0 Then
+    If Not IsNumeric(numero) Then
+        MsgBox "Valor nulo. Ingresa un número.", vbCritical, "Error"
+        Exit Sub
+    End If
+    
+    If Not (numero = Int(numero)) Or InStr(numero, ".") > 0 Or InStr(numero, ",") > 0 Or numero <= 0 Then
+        MsgBox "Valor inválido. Ingresa un número entero.", vbCritical, "Error"
         Exit Sub
     End If
     
@@ -572,8 +634,8 @@ Private Sub commandButton1_click()
     Me.CheckBox1.Value = False
     Me.cmbUsuario.Value = ""
     
-    Call consumos
-    
+    'Call consumos
+    Me.caja1.Clear
     Application.ThisWorkbook.Save
     
     'Unload Me
@@ -647,8 +709,8 @@ Sub FiltrarCaja2(ByVal sector As String)
     Dim tbl As ListObject
     Dim vData As Variant
     Dim i As Long, k As Long
-    Dim tipoSel As String, grupoSel As String
-    Dim tipoFila As String, grupoFila As String, artFila As String, artFila2 As String
+    Dim tipoSel As String, grupoSel As String, lugarSel As String
+    Dim tipoFila As String, grupoFila As String, lugarFila As String, artFila As String, artFila2 As String
     Dim arrArt() As Variant
     Dim cuenta As Long
     
@@ -658,12 +720,16 @@ Sub FiltrarCaja2(ByVal sector As String)
     vData = tbl.DataBodyRange.Value
     tipoSel = Me.cmbFiltroTipo.Value
     grupoSel = Me.cmbFiltroGrupo.Value
+    lugarSel = GetControlTextValue("TextBox2")
     
     cuenta = 0
     For i = 1 To UBound(vData, 1)
         tipoFila = CStr(vData(i, 1))
         grupoFila = CStr(vData(i, 6))
-        If (tipoSel = "" Or tipoFila = tipoSel) And (grupoSel = "" Or grupoFila = grupoSel) Then
+        lugarFila = CStr(vData(i, 19))
+            If (tipoSel = "" Or tipoFila = tipoSel) And _
+           (grupoSel = "" Or grupoFila = grupoSel) And _
+           (lugarSel = "" Or lugarFila = lugarSel) Then
             cuenta = cuenta + 1
         End If
     Next i
@@ -696,9 +762,12 @@ Sub FiltrarCaja2(ByVal sector As String)
         For i = 1 To UBound(vData, 1)
             tipoFila = CStr(vData(i, 1))
             grupoFila = CStr(vData(i, 6))
+            lugarFila = CStr(vData(i, 19))
             artFila = CStr(vData(i, 4))
             artFila2 = CStr(vData(i, 21))
-            If (tipoSel = "" Or tipoFila = tipoSel) And (grupoSel = "" Or grupoFila = grupoSel) Then
+            If (tipoSel = "" Or tipoFila = tipoSel) And _
+               (grupoSel = "" Or grupoFila = grupoSel) And _
+               (lugarSel = "" Or lugarFila = lugarSel) Then
                 arrArt(k, 1) = artFila
                 arrArt(k, 2) = artFila2
                 k = k + 1
@@ -710,26 +779,121 @@ End Sub
 
 Private Sub cmbFiltroTipo_Change()
     If bloqueaEventos Then Exit Sub
+    Call ActualizarGrupoPorTipo(Me.cmbFiltroTipo.Value)
     Call FiltrarCaja2("Tipo")
+End Sub
+
+Private Sub cmbFiltroTipo_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Me.cmbFiltroTipo.Value = ""
+End Sub
+
+Sub ActualizarGrupoPorTipo(ByVal tipoSel As String)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim i As Long
+    Dim grupoFila As String
+    Dim dictG As Object
+    Dim keysArr As Variant
+    Dim oldGrupo As String
+
+    Set dictG = CreateObject("Scripting.Dictionary")
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then Exit Sub
+
+    oldGrupo = Me.cmbFiltroGrupo.Value
+    vData = tbl.DataBodyRange.Value
+    For i = 1 To UBound(vData, 1)
+        If tipoSel = "" Or CStr(vData(i, 1)) = tipoSel Then
+            grupoFila = CStr(vData(i, 6))
+            If grupoFila <> "" Then dictG(grupoFila) = 1
+        End If
+    Next i
+
+    bloqueaEventos = True
+    Me.cmbFiltroGrupo.Clear
+    If dictG.Count > 0 Then
+        keysArr = SortedKeysFromDict(dictG)
+        For i = LBound(keysArr) To UBound(keysArr)
+            Me.cmbFiltroGrupo.AddItem keysArr(i)
+        Next i
+        If dictG.Count = 1 Then
+            Me.cmbFiltroGrupo.Value = keysArr(LBound(keysArr))
+        ElseIf oldGrupo <> "" And dictG.Exists(oldGrupo) Then
+            Me.cmbFiltroGrupo.Value = oldGrupo
+        Else
+            Me.cmbFiltroGrupo.Value = ""
+        End If
+    End If
+    bloqueaEventos = False
+End Sub
+
+Sub ActualizarTipoPorGrupo(ByVal grupoSel As String)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim i As Long
+    Dim tipoFila As String
+    Dim dictT As Object
+    Dim keysArr As Variant
+    Dim oldTipo As String
+
+    Set dictT = CreateObject("Scripting.Dictionary")
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then Exit Sub
+
+    oldTipo = Me.cmbFiltroTipo.Value
+    vData = tbl.DataBodyRange.Value
+    For i = 1 To UBound(vData, 1)
+        If grupoSel = "" Or CStr(vData(i, 6)) = grupoSel Then
+            tipoFila = CStr(vData(i, 1))
+            If tipoFila <> "" Then dictT(tipoFila) = 1
+        End If
+    Next i
+
+    bloqueaEventos = True
+    Me.cmbFiltroTipo.Clear
+    If dictT.Count > 0 Then
+        keysArr = SortedKeysFromDict(dictT)
+        For i = LBound(keysArr) To UBound(keysArr)
+            Me.cmbFiltroTipo.AddItem keysArr(i)
+        Next i
+        If dictT.Count = 1 Then
+            Me.cmbFiltroTipo.Value = keysArr(LBound(keysArr))
+        ElseIf oldTipo <> "" And dictT.Exists(oldTipo) Then
+            Me.cmbFiltroTipo.Value = oldTipo
+        Else
+            Me.cmbFiltroTipo.Value = ""
+        End If
+    End If
+    bloqueaEventos = False
 End Sub
 
 Private Sub cmbFiltroGrupo_Change()
     If bloqueaEventos Then Exit Sub
+    Call ActualizarTipoPorGrupo(Me.cmbFiltroGrupo.Value)
     Call FiltrarCaja2("Grupo")
+End Sub
+
+Private Sub cmbFiltroGrupo_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Me.cmbFiltroGrupo.Value = ""
 End Sub
 
 Private Sub btnLimpiarCaja2_Click()
     bloqueaEventos = True
     Me.cmbFiltroTipo.Value = ""
     Me.cmbFiltroGrupo.Value = ""
+    On Error Resume Next
+    Me.TextBox2.Value = ""
+    On Error GoTo 0
     bloqueaEventos = False
+    Call ActualizarGrupoPorTipo("")
+    Call ActualizarTipoPorGrupo("")
     Call FiltrarCaja2("")
 End Sub
 
 Private Sub caja2_Click()
     If Me.caja2.ListIndex <> -1 Then
         Me.ComboBox1.Value = Me.caja2.Value
-        If Me.TextBox1.Value < 1 Then
+        If Me.TextBox1.Value < 1 Or Me.TextBox1.Value = "" Then
             Me.TextBox1.Value = 1
         End If
     End If
@@ -752,4 +916,6 @@ End Sub
 
 
 
-'kalo2
+'kalo22
+
+
