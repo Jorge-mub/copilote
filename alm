@@ -261,6 +261,7 @@ Private Sub UserForm_Activate()
         .Width = Me.Width * 0.08
         .Top = Me.Height * 0.062
         .Left = Me.Width * 0.73
+        .Visible = False
     End With
 
     With Me.btAgregar
@@ -268,6 +269,7 @@ Private Sub UserForm_Activate()
         .Width = Me.Width * 0.08
         .Top = Me.Height * 0.062
         .Left = Me.Width * 0.835
+        '.Visible = False
     End With
     
     With Me.Label1
@@ -1821,6 +1823,6 @@ Sub RedimensionarPage3()
     End With
 End Sub
 
-'kalo
+'kalo1024
 
 
