@@ -29,33 +29,23 @@ End Sub
 
 Private Sub Image1_MouseUp(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     If Me.Image1.Height < 190 Or Me.Image1.Width < 310 Then
-        Me.Image1.Height = Me.Height * 0.54
-        Me.Image1.Width = Me.Width * 0.436
+        Me.Image1.Height = Me.Image1.Height * 1.5
+        Me.Image1.Width = Me.Image1.Width * 1.5
         Me.Image1.Top = Me.Height * 0.23
         Me.Image1.Left = Me.Width * 0.282
-        Me.caja1.Visible = False
-        Me.caja2.Visible = False
-        Me.ComboBox1.Enabled = False
-        Me.cmbFiltroTipo.Enabled = False
-        Me.cmbFiltroGrupo.Enabled = False
-        Me.TextBox1.Enabled = False
-        Me.TextBox2.Enabled = False
-        Me.btAgregar.Enabled = False
-        Me.CommandButton1.Enabled = False
+        
+        For Each s In ActiveSheet.Shapes
+            s.Visible = msoFalse
+        Next s
     Else
-        Me.Image1.Height = Me.Height * 0.27
-        Me.Image1.Width = Me.Width * 0.218
+        Me.Image1.Height = Me.Image1.Height / 3
+        Me.Image1.Width = Me.Image1.Width / 3
         Me.Image1.Top = Me.Height * 0.07
         Me.Image1.Left = Me.Width * 0.75
-        Me.caja1.Visible = True
-        Me.caja2.Visible = True
-        Me.ComboBox1.Enabled = True
-        Me.cmbFiltroTipo.Enabled = True
-        Me.cmbFiltroGrupo.Enabled = True
-        Me.TextBox1.Enabled = True
-        Me.TextBox2.Enabled = True
-        Me.btAgregar.Enabled = True
-        Me.CommandButton1.Enabled = True
+        
+        For Each s In ActiveSheet.Shapes
+            s.Visible = msoTrue
+        Next s
     End If
 End Sub
 
@@ -348,11 +338,12 @@ Private Sub UserForm_Activate()
     On Error GoTo 0
     
     With Me.Image1  ' Imagen
-        .Height = Me.Height * 0.27
-        .Width = Me.Width * 0.218
+        '.Height = Me.Height * 0.27 '180
+        '.Width = Me.Width * 0.218 '300
         .Top = Me.Height * 0.07
         .Left = Me.Width * 0.75
         .PictureSizeMode = fmPictureSizeModeStretch
+        .AutoSize = True
     End With
     
     With Me.Label3  ' USUARIO
@@ -988,6 +979,7 @@ Private Sub imagenes(ByVal item As String)
     Dim valor As String
     Dim fila As Long
     Dim rutaImagen As String
+    Dim ratio As Double
     
     On Error GoTo ManejoError
     
@@ -1010,7 +1002,26 @@ Private Sub imagenes(ByVal item As String)
                 fila = tbl.DataBodyRange.Rows(i).row
                 rutaImagen = "C:\Users\melendezj\Downloads\Insertos IMG\" & fila & ".jpg"
                 Me.Image1.Visible = True
+                Me.Image1.AutoSize = True
                 Me.Image1.Picture = LoadPicture(rutaImagen)
+                
+                ratio = Me.Image1.Width / Me.Image1.Height
+                Me.Image1.AutoSize = False
+                
+                Me.Image1.Height = 180
+                Me.Image1.Width = Me.Image1.Height * ratio
+                
+                Do
+                If Me.Image1.Width > 300 Then
+                    Me.Image1.Height = Me.Image1.Height - 5
+                    Me.Image1.Width = Me.Image1.Height * ratio
+                End If
+                Loop Until Me.Image1.Width < 300
+                
+                '.Height = Me.Height * 0.27 '180
+                '.Width = Me.Width * 0.218 '300
+                '.Top = Me.Height * 0.07
+                '.Left = Me.Width * 0.75
             Else
                 Me.Image1.Visible = False
             End If
@@ -1028,6 +1039,4 @@ End Sub
 
 
 
-'kalo1024
-
-
+'kalo2077
