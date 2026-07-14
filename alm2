@@ -1468,7 +1468,7 @@ Private Sub boton2_click()
     Dim i As Long, n As Long
     Dim fila As Long
     Dim nombre As Variant
-    Dim wb As Workbook
+    Dim wb As workbook
     
     Application.ScreenUpdating = False
     Application.Calculation = xlCalculationManual
@@ -1823,6 +1823,6 @@ Sub RedimensionarPage3()
     End With
 End Sub
 
-'kalo1024
+'kalo2077
 
 
