@@ -9,6 +9,7 @@ Private dog As String
 Private bird As String
 Private check As Boolean
 Private vector As Variant
+Private zzoom As Boolean
 
 Private Sub cmbUsuario_change()
     If Me.cmbUsuario.ListIndex <> -1 Then
@@ -28,24 +29,44 @@ Private Sub Combobox1_change()
 End Sub
 
 Private Sub Image1_MouseUp(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
-    If Me.Image1.Height < 190 Or Me.Image1.Width < 310 Then
+    zzoom = Not zzoom
+    If zzoom Then
+        Me.Frame1.ZOrder 0
+    
         Me.Image1.Height = Me.Image1.Height * 1.5
         Me.Image1.Width = Me.Image1.Width * 1.5
-        Me.Image1.Top = Me.Height * 0.23
-        Me.Image1.Left = Me.Width * 0.282
         
-        For Each s In ActiveSheet.Shapes
-            s.Visible = msoFalse
-        Next s
+        'Me.Frame1.Height = Me.Height
+        'Me.Frame1.Width = Me.Width
+        Me.Frame1.Height = Me.Image1.Height + 3.5
+        Me.Frame1.Width = Me.Image1.Width + 3.5
+        
+        'Me.Frame1.Top = Me.Height * 0.23
+        'Me.Frame1.Left = 0
+        'Me.Image1.Left = Me.Frame1.Width * 0.4
+        
+        Me.Frame1.Top = Me.Height * 0.23
+        Me.Frame1.Left = Me.Width * 0.282
+        
+        Me.ComboBox1.Enabled = False
+        Me.caja2.Enabled = False
+        Me.caja1.Enabled = False
+        Me.TextBox2.Enabled = False
     Else
-        Me.Image1.Height = Me.Image1.Height / 3
-        Me.Image1.Width = Me.Image1.Width / 3
-        Me.Image1.Top = Me.Height * 0.07
-        Me.Image1.Left = Me.Width * 0.75
+        Me.Image1.Height = Me.Image1.Height * (2 / 3)
+        Me.Image1.Width = Me.Image1.Width * (2 / 3)
+        Me.Image1.Top = 0
+        Me.Image1.Left = 0
         
-        For Each s In ActiveSheet.Shapes
-            s.Visible = msoTrue
-        Next s
+        Me.Frame1.Height = Me.Image1.Height + 3.5
+        Me.Frame1.Width = Me.Image1.Width + 3.5
+        Me.Frame1.Top = Me.Height * 0.07
+        Me.Frame1.Left = Me.Width * 0.75
+        
+        Me.ComboBox1.Enabled = True
+        Me.caja2.Enabled = True
+        Me.caja1.Enabled = True
+        Me.TextBox2.Enabled = True
     End If
 End Sub
 
@@ -87,6 +108,8 @@ Private Sub UserForm_Initialize()
     Dim alto As Long
     Dim ancho As Long
     
+    zzoom = False
+    
     On Error Resume Next
     If Exist.ListObjects("tabExistencias").AutoFilter.FilterMode Then
         Exist.ListObjects("tabExistencias").AutoFilter.ShowAllData
@@ -118,7 +141,7 @@ Private Sub UserForm_Initialize()
     Me.Top = Application.ActiveWindow.Top + alto * 0.075
     Me.Left = Application.ActiveWindow.Left + ancho * 0.025
     
-    Me.Image1.Visible = False
+    Me.Frame1.Visible = False
     
     With Me.ComboBox1
         fin = Exist.ListObjects("tabExistencias").ListRows.Count + 1
@@ -239,7 +262,7 @@ Private Sub UserForm_Activate()
     letraObjeto = Me.Height * 0.024
     letraCabeceras = Me.Height * 0.024
     letraTitulo = Me.Height * 0.024
-    letraBoton = Me.Height * 0.03
+    letraBoton = Me.Height * 0.028
     letraCheck = Me.Height * 0.03
 
     If modo Then
@@ -286,6 +309,7 @@ Private Sub UserForm_Activate()
                         Me.caja1.Width * 0.2
         .Font.Size = letraCaja
         .TextAlign = fmTextAlignCenter
+        .ZOrder 1
     End With
     
     With Me.lbl01
@@ -340,10 +364,16 @@ Private Sub UserForm_Activate()
     With Me.Image1  ' Imagen
         '.Height = Me.Height * 0.27 '180
         '.Width = Me.Width * 0.218 '300
-        .Top = Me.Height * 0.07
-        .Left = Me.Width * 0.75
+        '.Top = Me.Height * 0.07
+        '.Left = Me.Width * 0.75
         .PictureSizeMode = fmPictureSizeModeStretch
         .AutoSize = True
+    End With
+    
+    With Me.Frame1  ' Marco
+        .Top = Me.Height * 0.07
+        .Left = Me.Width * 0.75
+        .ZOrder fmtop
     End With
     
     With Me.Label3  ' USUARIO
@@ -447,8 +477,6 @@ Private Sub UserForm_Activate()
         .Value = ""
     End With
     
-    'Call imagenes
-    
     With Me.caja2   ' CAJA 2
         .Height = Me.Height * 0.45
         .Width = Me.Width * 0.495
@@ -459,6 +487,7 @@ Private Sub UserForm_Activate()
                         Me.caja2.Width * 0.57 & ";"
         .Font.Size = letraCaja
         .TextAlign = fmTextAlignLeft
+        .ZOrder 1
     End With
     
     With Me.Label14 ' CABECERA CAJA 2 ARTICULO
@@ -543,7 +572,7 @@ Private Sub UserForm_Activate()
         '.Left = Me.btAgregar.Left + Me.btAgregar.Width * 1.1
         .Left = Me.caja1.Left
         .Font.Size = letraBoton
-        .Caption = "Borrar"
+        .Caption = "Borrar item de la tabla"
     End With
     
     With Me.CommandButton1
@@ -978,20 +1007,22 @@ Private Sub imagenes(ByVal item As String)
     Dim i As Long
     Dim valor As String
     Dim fila As Long
-    Dim rutaImagen As String
     Dim ratio As Double
+    Dim iteracion As Double
+    Dim altura As Double
+    Dim rutaImagen As String
     
     On Error GoTo ManejoError
     
     Set tbl = Exist.ListObjects("tabExistencias")
     If tbl Is Nothing Or tbl.DataBodyRange Is Nothing Then
-        Me.Image1.Visible = False
+        Me.Frame1.Visible = False
         Exit Sub
     End If
     
     tabla = tbl.DataBodyRange.Value
     If Not IsArray(tabla) Then
-        Me.Image1.Visible = False
+        Me.Frame1.Visible = False
         Exit Sub
     End If
     
@@ -1001,42 +1032,43 @@ Private Sub imagenes(ByVal item As String)
             If StrComp(Trim$(CStr(tabla(i, 17))), "IMG", vbTextCompare) = 0 Then
                 fila = tbl.DataBodyRange.Rows(i).row
                 rutaImagen = "C:\Users\melendezj\Downloads\Insertos IMG\" & fila & ".jpg"
-                Me.Image1.Visible = True
+                Me.Frame1.Visible = True
                 Me.Image1.AutoSize = True
                 Me.Image1.Picture = LoadPicture(rutaImagen)
                 
                 ratio = Me.Image1.Width / Me.Image1.Height
                 Me.Image1.AutoSize = False
                 
-                Me.Image1.Height = 180
-                Me.Image1.Width = Me.Image1.Height * ratio
+                altura = 180
+                iteracion = altura * ratio
                 
-                Do
-                If Me.Image1.Width > 300 Then
-                    Me.Image1.Height = Me.Image1.Height - 5
-                    Me.Image1.Width = Me.Image1.Height * ratio
+                If iteracion > 300 Then
+                 Do
+                     altura = altura - 6
+                     iteracion = altura * ratio
+                
+                 Loop Until iteracion < 300
                 End If
-                Loop Until Me.Image1.Width < 300
                 
-                '.Height = Me.Height * 0.27 '180
-                '.Width = Me.Width * 0.218 '300
-                '.Top = Me.Height * 0.07
-                '.Left = Me.Width * 0.75
+                Me.Image1.Height = altura
+                Me.Image1.Width = iteracion
+                Me.Frame1.Height = altura + 3.5
+                Me.Frame1.Width = iteracion + 3.5
             Else
-                Me.Image1.Visible = False
+                Me.Frame1.Visible = False
             End If
             Exit Sub
         End If
     Next i
     
-    Me.Image1.Visible = False
+    Me.Frame1.Visible = False
     Exit Sub
     
 ManejoError:
-    Me.Image1.Visible = False
+    Me.Frame1.Visible = False
 End Sub
 
 
 
 
-'kalo2077
+'kalo3077
