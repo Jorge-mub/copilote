@@ -33,8 +33,8 @@ Private Sub Image1_MouseUp(ByVal Button As Integer, ByVal Shift As Integer, ByVa
     If zzoom Then
         Me.Frame1.ZOrder 0
     
-        Me.Image1.Height = Me.Image1.Height * 1.5
-        Me.Image1.Width = Me.Image1.Width * 1.5
+        Me.Image1.Height = Me.Image1.Height * 2
+        Me.Image1.Width = Me.Image1.Width * 2
         
         'Me.Frame1.Height = Me.Height
         'Me.Frame1.Width = Me.Width
@@ -42,7 +42,7 @@ Private Sub Image1_MouseUp(ByVal Button As Integer, ByVal Shift As Integer, ByVa
         Me.Frame1.Width = Me.Image1.Width + 3.5
         
         'Me.Frame1.Top = Me.Height * 0.23
-        'Me.Frame1.Left = 0
+        'Me.Frame1.Left =
         'Me.Image1.Left = Me.Frame1.Width * 0.4
         
         Me.Frame1.Top = Me.Height * 0.23
@@ -53,8 +53,8 @@ Private Sub Image1_MouseUp(ByVal Button As Integer, ByVal Shift As Integer, ByVa
         Me.caja1.Enabled = False
         Me.TextBox2.Enabled = False
     Else
-        Me.Image1.Height = Me.Image1.Height * (2 / 3)
-        Me.Image1.Width = Me.Image1.Width * (2 / 3)
+        Me.Image1.Height = Me.Image1.Height * (1 / 2)
+        Me.Image1.Width = Me.Image1.Width * (1 / 2)
         Me.Image1.Top = 0
         Me.Image1.Left = 0
         
@@ -107,6 +107,10 @@ Private Sub UserForm_Initialize()
     Dim iE As Long, kE As Variant
     Dim alto As Long
     Dim ancho As Long
+    Dim mi_ratio As Double
+    Dim arrMedidas() As String
+    Dim anchoMonitor As Double
+    Dim altoMonitor As Double
     
     zzoom = False
     
@@ -130,11 +134,24 @@ Private Sub UserForm_Initialize()
     
     alto = Application.Height
     ancho = Application.Width
+    mi_ratio = alto / ancho 'Si el ratio es mayor a 0.55 la interfaz se rompera.
     
-    If alto < 552 Or ancho < 1036.5 Then
-        alto = 552
-        ancho = 1036.5
-    End If
+    arrMedidas = Split(TamañoMonitor, "x")
+    
+    ancho = arrMedidas(0)
+    alto = arrMedidas(1)
+    
+    'If alto < 552 Or ancho < 1036.5 Then
+    '    alto = 552
+    '    ancho = 1036.5
+    'End If
+    
+    'FAKE - REAL - NEW
+    '1366   1036  1024.5
+    '768    552   576
+    
+    '1920   1452  1440
+    '1080   786   810
     
     Me.Height = alto * 0.85
     Me.Width = ancho * 0.95
@@ -1039,15 +1056,16 @@ Private Sub imagenes(ByVal item As String)
                 ratio = Me.Image1.Width / Me.Image1.Height
                 Me.Image1.AutoSize = False
                 
-                altura = 180
+                altura = Me.Height * 0.269420745397396
+                'altura = 180
                 iteracion = altura * ratio
                 
-                If iteracion > 300 Then
+                If iteracion > (Me.Width * 0.217485863418878) Then
                  Do
                      altura = altura - 6
                      iteracion = altura * ratio
                 
-                 Loop Until iteracion < 300
+                 Loop Until iteracion < (Me.Width * 0.217485863418878)
                 End If
                 
                 Me.Image1.Height = altura
@@ -1071,4 +1089,4 @@ End Sub
 
 
 
-'kalo3077
+'kalo4077
