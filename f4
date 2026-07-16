@@ -105,14 +105,18 @@ Private Sub UserForm_Initialize()
     Dim dictT As Object, dictG As Object
     Dim sortedKeys As Variant
     Dim iE As Long, kE As Variant
+    
     Dim alto As Long
     Dim ancho As Long
     Dim mi_ratio As Double
     Dim arrMedidas() As String
+    Dim arrCoords() As String
     Dim anchoMonitor As Double
     Dim altoMonitor As Double
+    Dim posicionTop As Double
+    Dim posicionLeft As Double
     
-    zzoom = False
+    zzoom = False 'interruptor zoom de imagen
     
     On Error Resume Next
     If Exist.ListObjects("tabExistencias").AutoFilter.FilterMode Then
@@ -129,34 +133,34 @@ Private Sub UserForm_Initialize()
     currentDate = Date
     Me.startupposition = 0
     
-    'alto = Application.ActiveWindow.Height
-    'ancho = Application.ActiveWindow.Width
-    
-    alto = Application.Height
-    ancho = Application.Width
-    mi_ratio = alto / ancho 'Si el ratio es mayor a 0.55 la interfaz se rompera.
-    
+    '==== Medidas y tamaño ====
     arrMedidas = Split(TamañoMonitor, "x")
-    
+    arrCoords = Split(CoordenadasMonitor, "/")
     ancho = arrMedidas(0)
     alto = arrMedidas(1)
+    posicionTop = arrMedidas(2)
+    posicionLeft = arrMedidas(3)
+    mi_ratio = alto / ancho 'Si el ratio es mayor a 0.55/0.56 la interfaz se rompe.
     
-    'If alto < 552 Or ancho < 1036.5 Then
-    '    alto = 552
-    '    ancho = 1036.5
-    'End If
+    If mi_ratio > 0.55 Then
+        Do
+            alto = alto - 35
+            mi_ratio = alto / ancho
+        Loop Until mi_ratio < 0.55
+    End If
     
-    'FAKE - REAL - NEW
-    '1366   1036  1024.5
-    '768    552   576
+    '   Pixeles - puntos VBA - funcion TamañoMonitor
+    'X  1366        1036             1024.5
+    'Y   768         552              576
     
-    '1920   1452  1440
-    '1080   786   810
+    'X  1920        1452             1440
+    'Y  1080         786              810
     
     Me.Height = alto * 0.85
     Me.Width = ancho * 0.95
-    Me.Top = Application.ActiveWindow.Top + alto * 0.075
-    Me.Left = Application.ActiveWindow.Left + ancho * 0.025
+    
+    Me.Top = posicionTop + alto * 0.075
+    Me.Left = posicionLeft + ancho * 0.025 '1020 2460
     
     Me.Frame1.Visible = False
     
@@ -1089,4 +1093,4 @@ End Sub
 
 
 
-'kalo4077
+'kalo099
