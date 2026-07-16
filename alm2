@@ -50,23 +50,21 @@ Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub UserForm_Activate()
-    'Dim listaConsumos() As Variant
-    'Dim pt As PivotTable
-    'Dim ultFila As Long
-    'Dim n As Integer
-    'Dim indice(10)
-    'Dim vector(10)
-    'Dim numFilas As Long
-    'Dim pt2 As PivotTable
-    
     Dim dictConsumos As Object, dictGrupos As Object
     Dim vDatos As Variant
     Dim arrTop(1 To 10, 1 To 2) As Variant
     Dim cantConsumo As Double
     Dim pos As Long, p As Long, k As Variant
     Dim miGrupo As String
+    
     Dim alto As Long
     Dim ancho As Long
+    Dim arrMedidas() As String
+    Dim arrCoords() As String
+    Dim anchoMonitor As Double
+    Dim altoMonitor As Double
+    Dim posicionTop As Double
+    Dim posicionLeft As Double
     
     Me.elementosPO.Visible = False
     Me.lblPO3.Visible = False
@@ -80,6 +78,7 @@ Private Sub UserForm_Activate()
     Me.lblStock2.Visible = False
     Me.lblStock3.Visible = False
     Me.MultiPage1.Pages.item(2).Visible = False
+    
     '== Y ==
     '552
     '1036.5
@@ -88,21 +87,26 @@ Private Sub UserForm_Activate()
     '786
     '1452
     
-    alto = Application.ActiveWindow.Height
-    ancho = Application.ActiveWindow.Width
+    arrMedidas = Split(TamañoMonitor, "x")
+    arrCoords = Split(CoordenadasMonitor, "/")
+    ancho = arrMedidas(0)
+    alto = arrMedidas(1)
+    posicionTop = arrMedidas(2)
+    posicionLeft = arrMedidas(3)
+    mi_ratio = alto / ancho 'Si el ratio es mayor a 0.55/0.56 la interfaz se rompe.
     
-    If alto < 552 Or ancho < 1036.5 Then
-        alto = 552
-        ancho = 1036.5
+    If mi_ratio > 0.55 Then
+        Do
+            alto = alto - 35
+            mi_ratio = alto / ancho
+        Loop Until mi_ratio < 0.55
     End If
     
     With Me
         .Height = alto * 0.85
         .Width = ancho * 0.85
-        '.Top = 0
-        '.Left = 0
-        .Top = Application.ActiveWindow.Top + alto * 0.075
-        .Left = Application.ActiveWindow.Left + ancho * 0.075
+        .Top = posicionTop + alto * 0.075
+        .Left = posicionLeft + ancho * 0.075
     End With
     
     With Me.MultiPage1
@@ -111,31 +115,6 @@ Private Sub UserForm_Activate()
         .Top = 0
         .Left = (Me.Width - .Width) * 0.25
     End With
-
-    'Set pt = sumaConsumos.PivotTables("dinamicaConsumos2")
-    'ultFila = pt.TableRange1.Rows.Count
-    
-    'For i = 1 To 10
-    '    vector(i) = 3.14159265358979 ^ 10
-    'Next i
-    
-    'ReDim listaConsumos(1 To 10, 1 To 2)
-    'For i = 1 To 10
-    '    n = 0
-    '    For j = 2 To (ultFila - 1)
-    '        If sumaConsumos.Range("B" & j).Value > n And sumaConsumos.Range("B" & j).Value < vector(i) Then
-    '            n = sumaConsumos.Range("B" & j).Value
-    '            indice(i) = j
-    '        Else
-    '            n = n
-    '        End If
-    '    Next j
-    '    For k = i To 10
-    '        vector(k) = n
-    '    Next k
-    '    listaConsumos(i, 1) = sumaConsumos.Range("A" & indice(i)).Value
-    '    listaConsumos(i, 2) = sumaConsumos.Range("B" & indice(i)).Value
-    'Next i
     
     Set dictConsumos = CreateObject("Scripting.Dictionary")
     dictConsumos.CompareMode = vbTextCompare
@@ -1468,7 +1447,7 @@ Private Sub boton2_click()
     Dim i As Long, n As Long
     Dim fila As Long
     Dim nombre As Variant
-    Dim wb As workbook
+    Dim wb As Workbook
     
     Application.ScreenUpdating = False
     Application.Calculation = xlCalculationManual
@@ -1805,7 +1784,7 @@ Sub RedimensionarPage3()
         .Left = Me.Width * 0.03
         .Font.Size = .Height * 0.46
     End With
-    
+
     With Me.cmbMesInicioAcum
         .Height = Me.Height * 0.06
         .Width = Me.Width * 0.105
@@ -1823,6 +1802,8 @@ Sub RedimensionarPage3()
     End With
 End Sub
 
-'kalo2077
+'kalo099
+
+
 
 
