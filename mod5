@@ -1,0 +1,83 @@
+Option Explicit
+
+#If VBA7 Then
+    Private Declare PtrSafe Function MonitorFromWindow Lib "user32" (ByVal hwnd As LongPtr, ByVal dwFlags As Long) As LongPtr
+    Private Declare PtrSafe Function GetMonitorInfo Lib "user32" Alias "GetMonitorInfoA" (ByVal hMonitor As LongPtr, ByRef lpmi As MONITORINFO) As Long
+    Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hwnd As LongPtr) As LongPtr
+    Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As LongPtr, ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
+#Else
+    Private Declare Function MonitorFromWindow Lib "user32" (ByVal hwnd As Long, ByVal dwFlags As Long) As Long
+    Private Declare Function GetMonitorInfo Lib "user32" Alias "GetMonitorInfoA" (ByVal hMonitor As Long, ByRef lpmi As MONITORINFO) As Long
+    Private Declare Function GetDC Lib "user32" (ByVal hwnd As Long) As Long
+    Private Declare Function ReleaseDC Lib "user32" (ByVal hwnd As Long, ByVal hdc As Long) As Long
+    Private Declare Function GetDeviceCaps Lib "gdi32" (ByVal hdc As Long, ByVal nIndex As Long) As Long
+#End If
+
+Private Type RECT
+    Left As Long
+    Top As Long
+    Right As Long
+    Bottom As Long
+End Type
+
+Private Type MONITORINFO
+    cbSize As Long
+    rcMonitor As RECT
+    rcWork As RECT
+    dwFlags As Long
+End Type
+
+Public Function CoordenadasMonitor() As String
+    Dim miMonitor As MONITORINFO
+    Dim hMonitor As LongPtr
+
+    miMonitor.cbSize = LenB(miMonitor)
+    hMonitor = MonitorFromWindow(Application.hwnd, 2&) ' MONITOR_DEFAULTTONEAREST
+
+    If GetMonitorInfo(hMonitor, miMonitor) <> 0 Then
+        CoordenadasMonitor = miMonitor.rcMonitor.Top & "/" & miMonitor.rcMonitor.Left
+    Else
+        CoordenadasMonitor = "No se pudo obtener la posición del monitor"
+    End If
+End Function
+
+Public Function TamañoMonitor() As String
+    Dim miMonitor As MONITORINFO
+    Dim hMonitor As LongPtr
+    Dim anchoPx As Long, altoPx As Long
+    Dim anchoPts As Double, altoPts As Double
+    Dim hdc As LongPtr
+    Dim dpiX As Long, dpiY As Long
+    Dim arrCoordenadas() As String
+    Dim coordsTopPts As Double
+    Dim coordsLeftPts As Double
+    
+    arrCoordenadas = Split(CoordenadasMonitor, "/")
+    miMonitor.cbSize = LenB(miMonitor)
+    hMonitor = MonitorFromWindow(Application.hwnd, 2&) ' MONITOR_DEFAULTTONEAREST
+
+    If GetMonitorInfo(hMonitor, miMonitor) <> 0 Then
+        anchoPx = miMonitor.rcMonitor.Right - miMonitor.rcMonitor.Left
+        altoPx = miMonitor.rcMonitor.Bottom - miMonitor.rcMonitor.Top
+
+        hdc = GetDC(0)
+        dpiX = GetDeviceCaps(hdc, 88) ' LOGPIXELSX
+        dpiY = GetDeviceCaps(hdc, 90) ' LOGPIXELSY
+        ReleaseDC 0, hdc
+
+        anchoPts = (anchoPx / dpiX * 72) + 11.5
+        altoPts = (altoPx / dpiY * 72) - 24
+        coordsTopPts = (arrCoordenadas(0) / dpiY * 72) + 0.75
+        coordsLeftPts = (arrCoordenadas(1) / dpiX * 72) - 4.5
+
+        TamañoMonitor = anchoPts & "x" & altoPts & "x" & coordsTopPts & "x" & coordsLeftPts
+    Else
+        TamañoMonitor = "No se pudo obtener el monitor"
+    End If
+End Function
+
+'Public Sub MostrarTamañoMonitorExcel()
+'    MsgBox "Monitor en puntos: " & TamañoMonitor & vbCrLf & _
+'           "Excel en puntos: " & Format(Application.Width / 20, "0.00") & " x " & Format(Application.Height / 20, "0.00")
+'End Sub
