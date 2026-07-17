@@ -5,6 +5,8 @@ Public Sub labelsTamano(frm As Object)
     frm.lblStock2.Visible = True
     frm.lblStock3.Visible = True
     
+    
+    
     frm.ListBox1.ColumnWidths = frm.ListBox1.Width * 0.35 & ";" & _
                                 frm.ListBox1.Width * 0.39 & ";" & _
                                 frm.ListBox1.Width * 0.095 & ";" & _
@@ -19,7 +21,8 @@ Public Sub labelsTamano(frm As Object)
         .Width = frm.ListBox1.Width * 0.095
         .Top = frm.Height * 0.16
         .Left = frm.lblDesc.Left + frm.lblDesc.Width
-        .Font.Size = frm.Height * 0.029
+        .Font.Name = "Bierstadt"
+        .Font.Size = frm.Height * 0.024
         .Caption = "Reform."
     End With
 
@@ -28,7 +31,8 @@ Public Sub labelsTamano(frm As Object)
         .Width = frm.ListBox1.Width * 0.16
         .Top = frm.Height * 0.16
         .Left = frm.lblStock1.Left + frm.lblStock1.Width
-        .Font.Size = frm.Height * 0.029
+        .Font.Name = "Bierstadt"
+        .Font.Size = frm.Height * 0.024
         .Caption = "Nuevo"
     End With
 
@@ -37,7 +41,8 @@ Public Sub labelsTamano(frm As Object)
         .Width = frm.ListBox1.Width * 0.08
         .Top = frm.Height * 0.16
         .Left = frm.lblStock2.Left + frm.lblStock2.Width
-        .Font.Size = frm.Height * 0.029
+        .Font.Name = "Bierstadt"
+        .Font.Size = frm.Height * 0.024
         .Visible = False
     End With
 End Sub
@@ -261,49 +266,60 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = frm.Width * 0.3475
         .Top = frm.TextBox6.Top
         .Left = frm.Width * 0.605
-        .ColumnCount = 4
-        .Font.Size = 12
-        .ColumnWidths = frm.ListBox2.Width * 0.26 & ";" & _
+        .ColumnCount = 5
+        .Font.Name = "Bierstadt"
+        .Font.Size = frm.Height * 0.02
+        .ColumnWidths = frm.ListBox2.Width * 0.2 & ";" & _
+                        frm.ListBox2.Width * 0.2 & ";" & _
                         frm.ListBox2.Width * 0.3 & ";" & _
-                        frm.ListBox2.Width * 0.28 & ";" & _
-                        frm.ListBox2.Width * 0.15
+                        frm.ListBox2.Width * 0.15 & ";" & _
+                        frm.ListBox2.Width * 0.14
         .TextAlign = fmTextAlignLeft
     End With
     
     With frm.Label28
         .Height = frm.Height * 0.041
-        .Width = frm.ListBox2.Width * 0.26
+        .Width = frm.ListBox2.Width * 0.2
         .Top = bloque1y
         .Left = frm.ListBox2.Left
         .Caption = "Fecha"
-        .Font.Size = frm.Height * 0.029
+        .Font.Size = frm.Height * 0.024
+    End With
+    
+    With frm.Label34
+        .Height = frm.Height * 0.041
+        .Width = frm.ListBox2.Width * 0.2
+        .Top = bloque1y
+        .Left = frm.ListBox2.Left + frm.Label28.Width
+        .Caption = "Usuario"
+        .Font.Size = frm.Height * 0.024
     End With
     
     With frm.Label29
         .Height = frm.Height * 0.041
         .Width = frm.ListBox2.Width * 0.3
         .Top = bloque1y
-        .Left = frm.ListBox2.Left + frm.Label28.Width
+        .Left = frm.Label34.Left + frm.Label34.Width
         .Caption = "Condición"
-        .Font.Size = frm.Height * 0.029
+        .Font.Size = frm.Height * 0.024
     End With
     
     With frm.Label30
         .Height = frm.Height * 0.041
-        .Width = frm.ListBox2.Width * 0.28
+        .Width = frm.ListBox2.Width * 0.15
         .Top = bloque1y
         .Left = frm.Label29.Left + frm.Label29.Width
         .Caption = "Código"
-        .Font.Size = frm.Height * 0.029
+        .Font.Size = frm.Height * 0.024
     End With
     
     With frm.Label31
         .Height = frm.Height * 0.041
-        .Width = frm.ListBox2.Width * 0.16
+        .Width = frm.ListBox2.Width * 0.15
         .Top = bloque1y
         .Left = frm.Label30.Left + frm.Label30.Width
         .Caption = "QYT"
-        .Font.Size = frm.Height * 0.029
+        .Font.Size = frm.Height * 0.024
     End With
 
     With frm.ListBox3
