@@ -1,5 +1,191 @@
 Private bloqueaEventos As Boolean
 
+Private Function SortedKeysFromDict(ByVal dictObj As Object) As Variant
+    Dim keysArr As Variant
+    Dim i As Long, j As Long
+    Dim temp As String
+
+    keysArr = dictObj.keys
+    If UBound(keysArr) > LBound(keysArr) Then
+        For i = LBound(keysArr) To UBound(keysArr) - 1
+            For j = i + 1 To UBound(keysArr)
+                If LCase$(keysArr(i)) > LCase$(keysArr(j)) Then
+                    temp = keysArr(i)
+                    keysArr(i) = keysArr(j)
+                    keysArr(j) = temp
+                End If
+            Next j
+        Next i
+    End If
+
+    SortedKeysFromDict = keysArr
+End Function
+
+Private Sub CargarComboUnico(ByVal combo As Object, ByVal colIndex As Long)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim dict As Object
+    Dim i As Long
+    Dim valor As String
+    Dim keysArr As Variant
+
+    Set tbl = Exist.ListObjects("tabExistencias")
+    Set dict = CreateObject("Scripting.Dictionary")
+    dict.CompareMode = vbTextCompare
+
+    combo.Clear
+    If tbl.ListRows.Count < 1 Then Exit Sub
+
+    vData = tbl.DataBodyRange.Value
+    For i = 1 To UBound(vData, 1)
+        valor = Trim$(CStr(vData(i, colIndex)))
+        If valor <> "" And Not dict.Exists(valor) Then
+            dict.Add valor, 1
+        End If
+    Next i
+
+    If dict.Count > 0 Then
+        keysArr = SortedKeysFromDict(dict)
+        For i = LBound(keysArr) To UBound(keysArr)
+            combo.AddItem keysArr(i)
+        Next i
+    End If
+End Sub
+
+Private Sub ActualizarGruposPorTipo(ByVal tipoSel As String)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim dictG As Object
+    Dim keysArr As Variant
+    Dim i As Long
+    Dim grupoFila As String
+    Dim oldGrupo As String
+
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then Exit Sub
+
+    Set dictG = CreateObject("Scripting.Dictionary")
+    dictG.CompareMode = vbTextCompare
+    oldGrupo = Me.gruposBox.Value
+    vData = tbl.DataBodyRange.Value
+
+    For i = 1 To UBound(vData, 1)
+        If tipoSel = "" Or CStr(vData(i, 1)) = tipoSel Then
+            grupoFila = Trim$(CStr(vData(i, 6)))
+            If grupoFila <> "" Then dictG(grupoFila) = 1
+        End If
+    Next i
+
+    bloqueaEventos = True
+    Me.gruposBox.Clear
+    If dictG.Count > 0 Then
+        keysArr = SortedKeysFromDict(dictG)
+        For i = LBound(keysArr) To UBound(keysArr)
+            Me.gruposBox.AddItem keysArr(i)
+        Next i
+
+        If dictG.Count = 1 Then
+            Me.gruposBox.Value = keysArr(LBound(keysArr))
+        ElseIf oldGrupo <> "" And dictG.Exists(oldGrupo) Then
+            Me.gruposBox.Value = oldGrupo
+        Else
+            Me.gruposBox.Value = ""
+        End If
+    End If
+    bloqueaEventos = False
+End Sub
+
+Private Sub ActualizarTiposPorGrupo(ByVal grupoSel As String)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim dictT As Object
+    Dim keysArr As Variant
+    Dim i As Long
+    Dim tipoFila As String
+    Dim oldTipo As String
+
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then Exit Sub
+
+    Set dictT = CreateObject("Scripting.Dictionary")
+    dictT.CompareMode = vbTextCompare
+    oldTipo = Me.tiposBox.Value
+    vData = tbl.DataBodyRange.Value
+
+    For i = 1 To UBound(vData, 1)
+        If grupoSel = "" Or CStr(vData(i, 6)) = grupoSel Then
+            tipoFila = Trim$(CStr(vData(i, 1)))
+            If tipoFila <> "" Then dictT(tipoFila) = 1
+        End If
+    Next i
+
+    bloqueaEventos = True
+    Me.tiposBox.Clear
+    If dictT.Count > 0 Then
+        keysArr = SortedKeysFromDict(dictT)
+        For i = LBound(keysArr) To UBound(keysArr)
+            Me.tiposBox.AddItem keysArr(i)
+        Next i
+
+        If dictT.Count = 1 Then
+            Me.tiposBox.Value = keysArr(LBound(keysArr))
+        ElseIf oldTipo <> "" And dictT.Exists(oldTipo) Then
+            Me.tiposBox.Value = oldTipo
+        Else
+            Me.tiposBox.Value = ""
+        End If
+    End If
+    bloqueaEventos = False
+End Sub
+
+Private Sub FiltrarListBox1()
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim vector() As Variant
+    Dim tipoSel As String
+    Dim grupoSel As String
+    Dim i As Long
+    Dim n As Long
+
+    Call labelsTamano(Me)
+
+    tipoSel = Me.tiposBox.Value
+    grupoSel = Me.gruposBox.Value
+
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then
+        Me.ListBox1.Clear
+        Exit Sub
+    End If
+
+    vData = tbl.DataBodyRange.Value
+    ReDim vector(1 To UBound(vData, 1) + 1, 1 To 4)
+
+    n = 0
+    For i = 1 To UBound(vData, 1)
+        If (tipoSel = "" Or CStr(vData(i, 1)) = tipoSel) And _
+           (grupoSel = "" Or CStr(vData(i, 6)) = grupoSel) Then
+            n = n + 1
+            vector(n, 1) = vData(i, 4)
+            vector(n, 2) = vData(i, 5)
+            vector(n, 3) = vData(i, 9)
+            vector(n, 4) = vData(i, 8)
+        End If
+    Next i
+
+    If n = 0 Then
+        Me.ListBox1.Clear
+        Exit Sub
+    End If
+
+    vector = Application.Transpose(vector)
+    ReDim Preserve vector(1 To 4, 1 To n + 1)
+    vector = Application.Transpose(vector)
+
+    Me.ListBox1.Clear
+    Me.ListBox1.List = vector
+End Sub
+
 Private Sub UserForm_Initialize()
     Dim i As Integer, totalWidth As String
     Dim j As Integer, totalWidth2 As String
@@ -66,6 +252,13 @@ Private Sub UserForm_Activate()
     Dim posicionTop As Double
     Dim posicionLeft As Double
     
+    Dim letraCaja As Long
+    Dim letraObjeto As Long
+    Dim letraCabeceras As Long
+    Dim letraTitulo As Long
+    Dim letraBoton As Long
+    Dim letraCheck As Long
+    
     Me.elementosPO.Visible = False
     Me.lblPO3.Visible = False
     Me.lblPO4.Visible = False
@@ -116,6 +309,15 @@ Private Sub UserForm_Activate()
         .Left = (Me.Width - .Width) * 0.25
     End With
     
+    letraCaja = Me.Height * 0.02
+    letraObjeto = Me.Height * 0.024
+    letraCabeceras = Me.Height * 0.024
+    letraTitulo = Me.Height * 0.024
+    letraBoton = Me.Height * 0.028
+    letraCheck = Me.Height * 0.03
+    
+    '====== Data de Listbox1 y gruposBox ======
+    ' Listbox1
     Set dictConsumos = CreateObject("Scripting.Dictionary")
     dictConsumos.CompareMode = vbTextCompare
     
@@ -159,75 +361,125 @@ Private Sub UserForm_Activate()
         End If
     Next k
     
+    Call CargarComboUnico(Me.tiposBox, 1)
+    Call CargarComboUnico(Me.gruposBox, 6)
+
+    Exist.ListObjects("tabExistencias").Range.Sort _
+        key1:=Exist.ListObjects("tabExistencias").Range.Columns(4), _
+        Order1:=xlAscending, Header:=xlYes
+    '=====================================================
+    
+    With Me.Label1  'Label Seleccionar articulo
+        .Height = Me.Height * 0.03
+        .Width = Me.Width * 0.1
+        .Top = Me.Height * 0.045
+        .Left = Me.Width * 0.02
+        .Font = "Bierstadt"
+        .Font.Bold = True
+        .Font.Size = letraTitulo
+    End With
+    
+    With Me.articulo    'ComboBox Articulos
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.2
+        .Top = Me.Label1.Top + Me.Label1.Height
+        .Left = Me.Label1.Left
+        .Font = "Bierstadt"
+        .Font.Size = letraObjeto
+    End With
+    
+    With Me.buscar  'boton lupa buscar
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.025
+        .Top = Me.articulo.Top
+        .Left = Me.articulo.Left + Me.articulo.Width * 1.04
+    End With
+    
+    With Me.boton2
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.03
+        .Top = Me.articulo.Top - Me.articulo.Height / 4
+        .Left = Me.buscar.Left + Me.buscar.Width * 1.3
+        .Font.Size = .Height * 0.5
+    End With
+    
+    With Me.Label32  'Label tipo
+        .Height = Me.Height * 0.03
+        .Width = Me.Width * 0.14
+        .Top = Me.Label1.Top
+        .Left = Me.Label1.Left + Me.Label1.Width * 2.8
+        .Font = "Bierstadt"
+        .Font.Bold = True
+        .Font.Size = letraTitulo
+    End With
+    
+    With Me.tiposBox   'ComboBox de tipos
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.2
+        .Top = Me.Label32.Top + Me.Label32.Height
+        .Left = Me.Label32.Left
+        .Font = "Bierstadt"
+        .Font.Size = letraObjeto
+    End With
+    
+    With Me.Label3  'Label grupos
+        .Height = Me.Height * 0.03
+        .Width = Me.Width * 0.14
+        .Top = Me.Label1.Top
+        .Left = Me.Label32.Left + Me.Label32.Width * 1.6
+        .Font = "Bierstadt"
+        .Font.Bold = True
+        .Font.Size = letraTitulo
+    End With
+    
+    With Me.gruposBox   'ComboBox de grupos
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.2
+        .Top = Me.Label3.Top + Me.Label3.Height
+        .Left = Me.Label3.Left
+        .Font = "Bierstadt"
+        .Font.Size = letraObjeto
+    End With
+    
+    With Me.lblArt
+        .Height = Me.Height * 0.041
+        .Width = (Me.Width * 0.9) * 0.7
+        .Top = Me.Height * 0.16
+        .Left = Me.Width * 0.02
+        .Font = "Bierstadt"
+        .Font.Size = letraCabeceras
+        .Caption = "Artículo"
+    End With
+    
+    With Me.lblDesc
+        .Height = Me.Height * 0.041
+        .Width = (Me.Width * 0.9) * 0.35
+        .Top = Me.Height * 0.16
+        .Left = Me.Width * 0.02 + Me.lblArt.Width
+        .Font = "Bierstadt"
+        .Font.Size = letraCabeceras
+        .Caption = "Descripción"
+    End With
+    
+    With Me.lblCons
+        .Height = Me.Height * 0.041
+        .Width = (Me.Width * 0.9) * 0.3
+        .Top = Me.Height * 0.16
+        .Left = Me.Width * 0.02 + Me.lblArt.Width
+        .Font = "Bierstadt"
+        .Font.Size = letraCabeceras
+        .Caption = "Consumo"
+    End With
+    
     With Me.ListBox1
         .Height = Me.Height * 0.6
         .Width = Me.Width * 0.9
         .Top = Me.Height * 0.2
         .Left = Me.Width * 0.02
         .List = arrTop
-        .Font.Size = .Height * 0.04
+        .Font = "Bierstadt"
+        .Font.Size = letraCaja
         .ColumnWidths = Me.ListBox1.Width * 0.7 & ";" & Me.ListBox1.Width * 0.3
-    End With
-    
-    Set dictGrupos = CreateObject("Scripting.Dictionary")
-    dictGrupos.CompareMode = vbTextCompare
-    Me.gruposBox.Clear
-    Exist.ListObjects("tabExistencias").Range.Sort _
-        key1:=Exist.ListObjects("tabExistencias").Range.Columns(6), _
-        Order1:=xlAscending, Header:=xlYes
-    
-    If Exist.ListObjects("tabExistencias").ListRows.Count > 0 Then
-        vDatos = Exist.ListObjects("tabExistencias").DataBodyRange.Value
-        For i = 1 To UBound(vDatos, 1)
-            miGrupo = CStr(vDatos(i, 6))
-            If miGrupo <> "" And Not dictGrupos.Exists(miGrupo) Then
-                dictGrupos.Add miGrupo, 1
-                Me.gruposBox.AddItem miGrupo
-            End If
-        Next i
-    End If
-    
-    Exist.ListObjects("tabExistencias").Range.Sort _
-        key1:=Exist.ListObjects("tabExistencias").Range.Columns(4), _
-        Order1:=xlAscending, Header:=xlYes
-    
-    With Me.gruposBox
-        .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.31
-        .Top = Me.Height * 0.08
-        .Left = Me.Width * 0.38
-        .Font.Size = Me.Height * 0.024
-    End With
-    
-    With Me.Label3
-        .Height = Me.Height * 0.033
-        .Width = Me.Width * 0.14
-        .Top = Me.Height * 0.045
-        .Left = Me.Width * 0.38
-        .Font.Size = Me.Height * 0.029
-    End With
-    
-    With Me.articulo
-        .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.25
-        .Top = Me.Height * 0.08
-        .Left = Me.Width * 0.02
-        .Font.Size = Me.Height * 0.024
-    End With
-    
-    With Me.buscar
-        .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.03
-        .Top = Me.Height * 0.079
-        .Left = Me.Width * 0.28
-    End With
-    
-    With Me.boton2
-        .Height = Me.Height * 0.055
-        .Width = Me.Width * 0.03
-        .Top = Me.Height * 0.079
-        .Left = Me.Width * 0.33
-        .Font.Size = .Height * 0.5
     End With
 
     With Me.eliminarFila
@@ -249,41 +501,6 @@ Private Sub UserForm_Activate()
         .Top = Me.Height * 0.062
         .Left = Me.Width * 0.835
         '.Visible = False
-    End With
-    
-    With Me.Label1
-        .Height = Me.Height * 0.033
-        .Width = Me.Width * 0.14
-        .Top = Me.Height * 0.045
-        .Left = Me.Width * 0.02
-        .Font.Size = Me.Height * 0.029
-    End With
-    
-    With Me.lblArt
-        .Height = Me.Height * 0.041
-        .Width = Me.ListBox1.Width * 0.7
-        .Top = Me.Height * 0.16
-        .Left = Me.ListBox1.Left
-        .Font.Size = Me.Height * 0.029
-        .Caption = "Artículo"
-    End With
-    
-    With Me.lblDesc
-        .Height = Me.Height * 0.041
-        .Width = Me.ListBox1.Width * 0.35
-        .Top = Me.Height * 0.16
-        .Left = Me.ListBox1.Left + Me.lblArt.Width
-        .Font.Size = Me.Height * 0.029
-        .Caption = "Descripción"
-    End With
-    
-    With Me.lblCons
-        .Height = Me.Height * 0.041
-        .Width = Me.ListBox1.Width * 0.3
-        .Top = Me.Height * 0.16
-        .Left = Me.ListBox1.Left + Me.lblArt.Width
-        .Font.Size = Me.Height * 0.029
-        .Caption = "Consumo"
     End With
     
     Call ordenesDeCompra
@@ -681,35 +898,24 @@ Private Sub MultiPage1_Change()
     End If
 End Sub
 
+Private Sub tiposBox_Change()
+    If bloqueaEventos Then Exit Sub
+    Call ActualizarGruposPorTipo(Me.tiposBox.Value)
+    Call FiltrarListBox1
+End Sub
+
+Private Sub tiposBox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Me.tiposBox.Value = ""
+End Sub
+
 Private Sub gruposBox_Change()
-    Dim filtroGrupo As String
-    Dim vector2() As Variant
-    Dim numFila2 As Long
-    Dim n2 As Integer
-    Dim i As Long
-    
-    Call labelsTamano(Me)
-    filtroGrupo = Me.gruposBox.Value
-    numFila2 = Exist.ListObjects("tabExistencias").ListRows.Count + 1
-    ReDim vector2(1 To numFila2, 1 To 4) 'ReDim vector2(1 To numFila2, 1 To 5)
-    
-    n2 = 0
-    For i = 2 To numFila2
-        If Exist.Range("F" & i) = filtroGrupo Then
-            n2 = n2 + 1
-            vector2(n2, 1) = Exist.Range("D" & i).Value
-            vector2(n2, 2) = Exist.Range("E" & i).Value
-            vector2(n2, 3) = Exist.Range("I" & i).Value
-            vector2(n2, 4) = Exist.Range("H" & i).Value
-            'vector2(n2, 5) = Exist.Range("J" & i).Value
-        End If
-    Next i
-    
-    vector2 = Application.Transpose(vector2)
-    ReDim Preserve vector2(1 To 4, 1 To n2 + 1)
-    vector2 = Application.Transpose(vector2)
-    Me.ListBox1.Clear
-    Me.ListBox1.List = vector2
+    If bloqueaEventos Then Exit Sub
+    Call ActualizarTiposPorGrupo(Me.gruposBox.Value)
+    Call FiltrarListBox1
+End Sub
+
+Private Sub gruposBox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Me.gruposBox.Value = ""
 End Sub
 
 Private Sub buscar_Click()
@@ -1802,7 +2008,9 @@ Sub RedimensionarPage3()
     End With
 End Sub
 
-'kalo099
+'kalo5090A
+
+
 
 
 
