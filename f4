@@ -1052,7 +1052,9 @@ Private Sub imagenes(ByVal item As String)
         If StrComp(valor, Trim$(item), vbTextCompare) = 0 Then
             If StrComp(Trim$(CStr(tabla(i, 17))), "IMG", vbTextCompare) = 0 Then
                 fila = tbl.DataBodyRange.Rows(i).row
+                'rutaImagen = "C:\Users\aguilard\Documents\Insertos IMG\" & fila & ".jpg"
                 rutaImagen = "C:\Users\melendezj\Downloads\Insertos IMG\" & fila & ".jpg"
+                '"Rubi Dayanne Aguilar Hurtado"
                 Me.Frame1.Visible = True
                 Me.Image1.AutoSize = True
                 Me.Image1.Picture = LoadPicture(rutaImagen)
@@ -1093,4 +1095,4 @@ End Sub
 
 
 
-'kalo099
+'kalo5090F4
