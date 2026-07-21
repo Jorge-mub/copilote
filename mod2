@@ -71,7 +71,8 @@ Public Sub elementosPageDetalles(frm As Object)
     altura2 = altura * 1.5
     ancho2 = ancho * 1.7
     
-    letra = frm.Height * 0.025
+    letra = frm.Height * 0.024
+    letraCaja = frm.Height * 0.02
 
     With frm.Label11
         .Height = altura
@@ -150,7 +151,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = ancho2 * 1.35
         .Top = frm.Label11.Top + frm.Label11.Height
         .Left = bloque1x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -162,7 +163,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = ancho2 * 1.35
         .Top = frm.Label12.Top + frm.Label12.Height
         .Left = bloque1x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -174,7 +175,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = ancho2 * 1.35
         .Top = frm.Label13.Top + frm.Label13.Height
         .Left = bloque1x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -186,7 +187,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = frm.Label16.Width
         .Top = bloque3yy
         .Left = bloque2x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -198,7 +199,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = ancho2
         .Top = frm.Label15.Top + frm.Label15.Height
         .Left = bloque2x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -210,7 +211,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = frm.Label16.Width * 0.8
         .Top = frm.Label16.Top + frm.Label16.Height
         .Left = bloque3x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -222,7 +223,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = frm.Label16.Width * 0.8
         .Top = frm.Label17.Top + frm.Label17.Height
         .Left = bloque3x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -234,7 +235,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = frm.Label16.Width * 0.8
         .Top = frm.Label18.Top + frm.Label18.Height
         .Left = bloque3x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -246,7 +247,7 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = ancho2
         .Top = frm.Label27.Top + frm.Label27.Height
         .Left = bloque2x
-        .Font.Size = letra
+        .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
         .Multiline = True
@@ -370,13 +371,14 @@ Public Sub plantilla(frm As Object)
             alpha = Trim(Replace(fila2.Address, "$A$", Delete))
             primero = fila2.Address
             
-            ReDim vector(1 To ultFila, 1 To 4)
+            ReDim vector(1 To ultFila, 1 To 5)
             contador = 1
             
             vector(1, 1) = consumo.Range("E" & alpha).Value
-            vector(1, 2) = consumo.Range("B" & alpha).Value
-            vector(1, 3) = consumo.Range("C" & alpha).Value
-            vector(1, 4) = consumo.Range("D" & alpha).Value
+            vector(1, 2) = consumo.Range("F" & alpha).Value
+            vector(1, 3) = consumo.Range("B" & alpha).Value
+            vector(1, 4) = consumo.Range("C" & alpha).Value
+            vector(1, 5) = consumo.Range("D" & alpha).Value
             
             Do
                 Set fila2 = consumo.Range("A2:A" & ultfila2).FindPrevious(fila2)
@@ -384,18 +386,19 @@ Public Sub plantilla(frm As Object)
                     alpha = Trim(Replace(fila2.Address, "$A$", Delete))
                     contador = contador + 1
                     vector(contador, 1) = consumo.Range("E" & alpha).Value
-                    vector(contador, 2) = consumo.Range("B" & alpha).Value
-                    vector(contador, 3) = consumo.Range("C" & alpha).Value
+                    vector(contador, 2) = consumo.Range("F" & alpha).Value
+                    vector(contador, 3) = consumo.Range("B" & alpha).Value
+                    vector(contador, 4) = consumo.Range("C" & alpha).Value
                     If Not consumo.Range("D" & alpha).Value Like "-*" Then
-                        vector(contador, 4) = " " & consumo.Range("D" & alpha).Value
+                        vector(contador, 5) = " " & consumo.Range("D" & alpha).Value
                     Else
-                        vector(contador, 4) = consumo.Range("D" & alpha).Value
+                        vector(contador, 5) = consumo.Range("D" & alpha).Value
                     End If
                 End If
             Loop While fila2.Address <> primero
             
             vector = Application.Transpose(vector)
-            ReDim Preserve vector(1 To 4, 1 To contador + 1)
+            ReDim Preserve vector(1 To 5, 1 To contador + 1)
             vector = Application.Transpose(vector)
             frm.ListBox2.List = vector
         Else
@@ -412,4 +415,4 @@ End Sub
 
 
 
-'kalo3
+'kalo21junMod2
