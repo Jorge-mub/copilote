@@ -259,6 +259,9 @@ Private Sub UserForm_Activate()
     Dim letraBoton As Long
     Dim letraCheck As Long
     
+    Dim alturaMulti As Double
+    Dim anchoMulti As Double
+    
     Me.elementosPO.Visible = False
     Me.lblPO3.Visible = False
     Me.lblPO4.Visible = False
@@ -302,12 +305,17 @@ Private Sub UserForm_Activate()
         .Left = posicionLeft + ancho * 0.075
     End With
     
+    '0.9411764705882353
+    '39.3
+    '27.6
     With Me.MultiPage1
-        .Height = alto * 0.775
+        '.Height = Me.Width * 0.5
+        .Height = Me.Height * 0.93
         .Width = ancho * 0.828
         .Top = 0
         .Left = (Me.Width - .Width) * 0.25
     End With
+    Debug.Print mi_ratio
     
     letraCaja = Me.Height * 0.02
     letraObjeto = Me.Height * 0.024
@@ -2008,10 +2016,5 @@ Sub RedimensionarPage3()
     End With
 End Sub
 
-'kalo5090A
-
-
-
-
-
+'kaloSoul21Jun
 
