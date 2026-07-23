@@ -315,9 +315,9 @@ Private Sub UserForm_Activate()
         .Top = 0
         .Left = (Me.Width - .Width) * 0.25
     End With
-    Debug.Print mi_ratio
-    
-    letraCaja = Me.Height * 0.02
+    'Debug.Print mi_ratio
+
+    letraCaja = Me.Height * 0.022
     letraObjeto = Me.Height * 0.024
     letraCabeceras = Me.Height * 0.024
     letraTitulo = Me.Height * 0.024
@@ -2016,5 +2016,4 @@ Sub RedimensionarPage3()
     End With
 End Sub
 
-'kaloSoul21Jun
-
+'kaloSoul23Jun
