@@ -45,8 +45,8 @@ Private Sub Image1_MouseUp(ByVal Button As Integer, ByVal Shift As Integer, ByVa
         'Me.Frame1.Left =
         'Me.Image1.Left = Me.Frame1.Width * 0.4
         
-        Me.Frame1.Top = Me.Height * 0.23
-        Me.Frame1.Left = Me.Width * 0.282
+        Me.Frame1.top = Me.Height * 0.23
+        Me.Frame1.left = Me.Width * 0.282
         
         Me.ComboBox1.Enabled = False
         Me.caja2.Enabled = False
@@ -55,13 +55,13 @@ Private Sub Image1_MouseUp(ByVal Button As Integer, ByVal Shift As Integer, ByVa
     Else
         Me.Image1.Height = Me.Image1.Height * (1 / 2)
         Me.Image1.Width = Me.Image1.Width * (1 / 2)
-        Me.Image1.Top = 0
-        Me.Image1.Left = 0
+        Me.Image1.top = 0
+        Me.Image1.left = 0
         
         Me.Frame1.Height = Me.Image1.Height + 3.5
         Me.Frame1.Width = Me.Image1.Width + 3.5
-        Me.Frame1.Top = Me.Height * 0.07
-        Me.Frame1.Left = Me.Width * 0.75
+        Me.Frame1.top = Me.Height * 0.07
+        Me.Frame1.left = Me.Width * 0.75
         
         Me.ComboBox1.Enabled = True
         Me.caja2.Enabled = True
@@ -159,8 +159,8 @@ Private Sub UserForm_Initialize()
     Me.Height = alto * 0.85
     Me.Width = ancho * 0.95
     
-    Me.Top = posicionTop + alto * 0.075
-    Me.Left = posicionLeft + ancho * 0.025 '1020 2460
+    Me.top = posicionTop + alto * 0.075
+    Me.left = posicionLeft + ancho * 0.025 '1020 2460
     
     Me.Frame1.Visible = False
     
@@ -299,8 +299,8 @@ Private Sub UserForm_Activate()
     With Me.Label10
         .Height = Me.Height * 0.042
         .Width = Me.Width
-        .Top = 0
-        .Left = 0
+        .top = 0
+        .left = 0
         .Caption = "Descontar  ."
         .Font.Size = Me.Height * 0.035
         .Font.Bold = True
@@ -310,8 +310,8 @@ Private Sub UserForm_Activate()
     With Me.Label11
         .Height = Me.Height * 0.042
         .Width = Me.Width
-        .Top = 0
-        .Left = 0
+        .top = 0
+        .left = 0
         .Caption = "Agregar  ."
         .Font.Size = Me.Height * 0.035
         .Font.Bold = True
@@ -321,8 +321,8 @@ Private Sub UserForm_Activate()
     With Me.caja1
         .Height = Me.Height * 0.45
         .Width = Me.Width * 0.45
-        .Top = Me.Height * 0.4
-        .Left = Me.Width * 0.525
+        .top = Me.Height * 0.4
+        .left = Me.Width * 0.525
         .ColumnCount = 4
         .ColumnWidths = Me.caja1.Width * 0.45 & ";" & _
                         Me.caja1.Width * 0.2 & ";" & _
@@ -336,8 +336,8 @@ Private Sub UserForm_Activate()
     With Me.lbl01
         .Height = Me.Height * 0.041
         .Width = Me.caja1.Width * 0.45
-        .Top = Me.caja1.Top - .Height
-        .Left = Me.caja1.Left
+        .top = Me.caja1.top - .Height
+        .left = Me.caja1.left
         .Font.Size = letraCabeceras
         .Caption = "Artículo"
         '.Visible = False
@@ -346,8 +346,8 @@ Private Sub UserForm_Activate()
     With Me.lbl02
         .Height = Me.Height * 0.041
         .Width = Me.caja1.Width * 0.2
-        .Top = Me.caja1.Top - .Height
-        .Left = Me.lbl01.Left + Me.lbl01.Width
+        .top = Me.caja1.top - .Height
+        .left = Me.lbl01.left + Me.lbl01.Width
         .Font.Size = letraCabeceras
         .Caption = "Condición"
     End With
@@ -355,8 +355,8 @@ Private Sub UserForm_Activate()
     With Me.lbl03
         .Height = Me.Height * 0.041
         .Width = Me.caja1.Width * 0.1
-        .Top = Me.caja1.Top - .Height
-        .Left = Me.lbl02.Left + Me.lbl02.Width
+        .top = Me.caja1.top - .Height
+        .left = Me.lbl02.left + Me.lbl02.Width
         .Font.Size = letraCabeceras
         .Caption = "QTY"
     End With
@@ -364,8 +364,8 @@ Private Sub UserForm_Activate()
     With Me.lbl04
         .Height = Me.Height * 0.041
         .Width = Me.caja1.Width * 0.25
-        .Top = Me.caja1.Top - .Height
-        .Left = Me.lbl03.Left + Me.lbl03.Width
+        .top = Me.caja1.top - .Height
+        .left = Me.lbl03.left + Me.lbl03.Width
         .Font.Size = letraCabeceras
         .Caption = "Usuario"
     End With
@@ -374,8 +374,8 @@ Private Sub UserForm_Activate()
     With Me.lbl05
         .Height = Me.Height * 0.041
         .Width = Me.caja1.Width * 0.2
-        .Top = Me.caja1.Top - .Height
-        .Left = Me.lbl04.Left + Me.lbl04.Width
+        .top = Me.caja1.top - .Height
+        .left = Me.lbl04.left + Me.lbl04.Width
         .Font.Size = letraCabeceras
         .Caption = "Usuario"
         .Visible = False
@@ -392,16 +392,16 @@ Private Sub UserForm_Activate()
     End With
     
     With Me.Frame1  ' Marco
-        .Top = Me.Height * 0.07
-        .Left = Me.Width * 0.75
+        .top = Me.Height * 0.07
+        .left = Me.Width * 0.75
         .ZOrder fmtop
     End With
     
     With Me.Label3  ' USUARIO
         .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.3
-        .Top = Me.Height * 0.07
-        .Left = Me.Width * 0.015
+        .top = Me.Height * 0.07
+        .left = Me.Width * 0.015
         .Caption = "Usuario"
         .Font.Size = letraTitulo
         .Font.Bold = True
@@ -410,8 +410,8 @@ Private Sub UserForm_Activate()
     With Me.Label12 ' BUSCAR ARTICULO
         .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.3
-        .Top = Me.Height * 0.15
-        .Left = Me.Label3.Left
+        .top = Me.Height * 0.15
+        .left = Me.Label3.left
         .Caption = "Buscar artículo"
         .Font.Size = letraTitulo
         .Font.Bold = True
@@ -428,8 +428,8 @@ Private Sub UserForm_Activate()
     With Me.Label1 ' TIPO
         .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.3
-        .Top = Me.Label3.Top
-        .Left = Me.Width * 0.41
+        .top = Me.Label3.top
+        .left = Me.Width * 0.41
         .Font.Size = letraTitulo
         .Font.Bold = True
         .Caption = "Filtro tipo"
@@ -438,8 +438,8 @@ Private Sub UserForm_Activate()
     With Me.Label13 ' GRUPO
         .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.3
-        .Top = Me.Label12.Top
-        .Left = Me.Label1.Left
+        .top = Me.Label12.top
+        .left = Me.Label1.left
         .Font.Size = letraTitulo
         .Font.Bold = True
         .Caption = "Filtro Grupo"
@@ -448,16 +448,16 @@ Private Sub UserForm_Activate()
     With Me.ComboBox1   ' COMBO ARTICULO
         .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.22
-        .Top = Me.Label12.Top + Me.Label12.Height
-        .Left = Me.Label3.Left
+        .top = Me.Label12.top + Me.Label12.Height
+        .left = Me.Label3.left
         .Font.Size = letraObjeto
     End With
     
     With Me.cmbUsuario  ' COMBO USUARIO
         .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.2
-        .Top = Me.Label3.Top + Me.Label3.Height
-        .Left = Me.Label3.Left
+        .top = Me.Label3.top + Me.Label3.Height
+        .left = Me.Label3.left
         .Font.Size = letraObjeto
         '.BackColor = &HC0E0FF
         '.BackColor = 12648384
@@ -466,24 +466,24 @@ Private Sub UserForm_Activate()
     With Me.cmbFiltroTipo   ' COMBO TIPO
         .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.165
-        .Top = Me.Label1.Top + Me.Label1.Height
-        .Left = Me.Label1.Left
+        .top = Me.Label1.top + Me.Label1.Height
+        .left = Me.Label1.left
         .Font.Size = letraObjeto
     End With
     
     With Me.cmbFiltroGrupo  ' COMBO GRUPO
         .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.25
-        .Top = Me.Label13.Top + Me.Label13.Height
-        .Left = Me.Label13.Left
+        .top = Me.Label13.top + Me.Label13.Height
+        .left = Me.Label13.left
         .Font.Size = letraObjeto
     End With
 
     With Me.labelLugar  ' LUGAR
         .Height = Me.Height * 0.03
         .Width = Me.caja1.Width * 0.09
-        .Top = Me.Label3.Top
-        .Left = Me.cmbFiltroTipo.Left + Me.cmbFiltroTipo.Width * 1.2
+        .top = Me.Label3.top
+        .left = Me.cmbFiltroTipo.left + Me.cmbFiltroTipo.Width * 1.2
         .Caption = "Lugar"
         .Font.Size = letraTitulo
         .Font.Bold = True
@@ -492,8 +492,8 @@ Private Sub UserForm_Activate()
     With Me.TextBox2    ' TEXTBOX LUGAR
         .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.04
-        .Top = Me.labelLugar.Top + Me.labelLugar.Height
-        .Left = Me.cmbFiltroTipo.Left + Me.cmbFiltroTipo.Width * 1.2
+        .top = Me.labelLugar.top + Me.labelLugar.Height
+        .left = Me.cmbFiltroTipo.left + Me.cmbFiltroTipo.Width * 1.2
         .Font.Size = letraObjeto
         .Value = ""
     End With
@@ -501,8 +501,8 @@ Private Sub UserForm_Activate()
     With Me.caja2   ' CAJA 2
         .Height = Me.Height * 0.45
         .Width = Me.Width * 0.495
-        .Top = Me.Height * 0.4
-        .Left = Me.Label3.Left
+        .top = Me.Height * 0.4
+        .left = Me.Label3.left
         .ColumnCount = 2
         .ColumnWidths = Me.caja2.Width * 0.41 & ";" & _
                         Me.caja2.Width * 0.57 & ";"
@@ -514,8 +514,8 @@ Private Sub UserForm_Activate()
     With Me.Label14 ' CABECERA CAJA 2 ARTICULO
         .Height = Me.Height * 0.041
         .Width = Me.caja2.Width * 0.415
-        .Top = Me.caja1.Top - .Height
-        .Left = Me.caja2.Left
+        .top = Me.caja1.top - .Height
+        .left = Me.caja2.left
         .Font.Size = letraCabeceras
         .Caption = "Artículo"
         '.Visible = False
@@ -524,8 +524,8 @@ Private Sub UserForm_Activate()
     With Me.Label15 ' CABECERA CAJA 2 DESCRIPCION
         .Height = Me.Height * 0.041
         .Width = Me.caja2.Width * 0.585
-        .Top = Me.caja1.Top - .Height
-        .Left = Me.Label14.Left + Me.Label14.Width
+        .top = Me.caja1.top - .Height
+        .left = Me.Label14.left + Me.Label14.Width
         .Font.Size = letraCabeceras
         .Caption = "Descripción"
     End With
@@ -533,8 +533,8 @@ Private Sub UserForm_Activate()
     With Me.Label2  ' CANTIDAD
         .Height = Me.Height * 0.04
         .Width = Me.caja1.Width * 0.14
-        .Top = Me.Height * 0.245
-        .Left = Me.Label3.Left
+        .top = Me.Height * 0.245
+        .left = Me.Label3.left
         .Caption = "Cantidad:"
         .Font.Size = letraTitulo
         .Font.Bold = True
@@ -543,8 +543,8 @@ Private Sub UserForm_Activate()
     With Me.TextBox1    ' TEXTBOX QTY
         .Height = Me.Height * 0.0415
         .Width = Me.Width * 0.03
-        .Top = Me.Height * 0.24
-        .Left = Me.Label2.Left + Me.Label2.Width
+        .top = Me.Height * 0.24
+        .left = Me.Label2.left + Me.Label2.Width
         .Font.Size = letraObjeto
         .Value = 0
     End With
@@ -552,8 +552,8 @@ Private Sub UserForm_Activate()
     With Me.btMenos
         .Height = Me.Height * 0.05
         .Width = Me.Width * 0.04
-        .Top = Me.Height * 0.24
-        .Left = Me.TextBox1.Left + Me.TextBox1.Width * 1.3
+        .top = Me.Height * 0.24
+        .left = Me.TextBox1.left + Me.TextBox1.Width * 1.3
         .Font.Size = Me.Height * 0.025
         .Caption = "-"
         .Accelerator = "q"
@@ -562,8 +562,8 @@ Private Sub UserForm_Activate()
     With Me.btMas
         .Height = Me.Height * 0.05
         .Width = Me.Width * 0.04
-        .Top = Me.Height * 0.24
-        .Left = Me.btMenos.Left + Me.btMenos.Width * 1.2
+        .top = Me.Height * 0.24
+        .left = Me.btMenos.left + Me.btMenos.Width * 1.2
         .Font.Size = Me.Height * 0.025
         .Caption = "+"
         .Accelerator = "w"
@@ -572,8 +572,8 @@ Private Sub UserForm_Activate()
     With Me.CheckBox1
         .Height = Me.Height * 0.04
         .Width = Me.caja1.Width * 0.25
-        .Top = Me.Height * 0.24
-        .Left = Me.btMas.Left + Me.btMas.Width * 1.65
+        .top = Me.Height * 0.24
+        .left = Me.btMas.left + Me.btMas.Width * 1.65
         .Font.Size = letraCheck
         .Font.Bold = True
     End With
@@ -581,17 +581,17 @@ Private Sub UserForm_Activate()
     With Me.btAgregar
         .Height = Me.Height * 0.055
         .Width = Me.Width * 0.2
-        .Top = Me.Height * 0.298
-        .Left = Me.caja2.Left
+        .top = Me.Height * 0.298
+        .left = Me.caja2.left
         .Font.Size = letraBoton
     End With
     
     With Me.btnEliminar
         .Height = Me.Height * 0.055
         .Width = Me.Width * 0.2
-        .Top = Me.btAgregar.Top
+        .top = Me.btAgregar.top
         '.Left = Me.btAgregar.Left + Me.btAgregar.Width * 1.1
-        .Left = Me.caja1.Left
+        .left = Me.caja1.left
         .Font.Size = letraBoton
         .Caption = "Borrar item de la tabla"
     End With
@@ -599,16 +599,16 @@ Private Sub UserForm_Activate()
     With Me.CommandButton1
         .Height = Me.Height * 0.055
         .Width = Me.Width * 0.25
-        .Top = Me.Height * 0.85
-        .Left = (Me.Width / 2) - (.Width / 2)
+        .top = Me.Height * 0.85
+        .left = (Me.Width / 2) - (.Width / 2)
         .Font.Size = letraBoton
     End With
     
     With Me.closeButton
         .Height = Me.Height * 0.055
         .Width = Me.Width * 0.08
-        .Top = Me.btnEliminar.Top
-        .Left = Me.Width * 0.85
+        .top = Me.btnEliminar.top
+        .left = Me.Width * 0.85
         .Visible = False
     End With
 End Sub
@@ -1095,4 +1095,4 @@ End Sub
 
 
 
-'kalo23junF4
+'kalo24junF4
