@@ -1,0 +1,1811 @@
+VERSION 5.00
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} Almacen 
+   Caption         =   "Almacén"
+   ClientHeight    =   8190
+   ClientLeft      =   120
+   ClientTop       =   465
+   ClientWidth     =   13110
+   OleObjectBlob   =   "alm.frx":0000
+End
+Attribute VB_Name = "Almacen"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Private bloqueaEventos As Boolean
+
+Private Function SortedKeysFromDict(ByVal dictObj As Object) As Variant
+    Dim keysArr As Variant
+    Dim i As Long, j As Long
+    Dim temp As String
+
+    keysArr = dictObj.keys
+    If UBound(keysArr) > LBound(keysArr) Then
+        For i = LBound(keysArr) To UBound(keysArr) - 1
+            For j = i + 1 To UBound(keysArr)
+                If LCase$(keysArr(i)) > LCase$(keysArr(j)) Then
+                    temp = keysArr(i)
+                    keysArr(i) = keysArr(j)
+                    keysArr(j) = temp
+                End If
+            Next j
+        Next i
+    End If
+
+    SortedKeysFromDict = keysArr
+End Function
+
+Private Sub CargarComboUnico(ByVal combo As Object, ByVal colIndex As Long)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim dict As Object
+    Dim i As Long
+    Dim valor As String
+    Dim keysArr As Variant
+
+    Set tbl = Exist.ListObjects("tabExistencias")
+    Set dict = CreateObject("Scripting.Dictionary")
+    dict.CompareMode = vbTextCompare
+
+    combo.Clear
+    If tbl.ListRows.Count < 1 Then Exit Sub
+
+    vData = tbl.DataBodyRange.Value
+    For i = 1 To UBound(vData, 1)
+        valor = Trim$(CStr(vData(i, colIndex)))
+        If valor <> "" And Not dict.Exists(valor) Then
+            dict.Add valor, 1
+        End If
+    Next i
+
+    If dict.Count > 0 Then
+        keysArr = SortedKeysFromDict(dict)
+        For i = LBound(keysArr) To UBound(keysArr)
+            combo.AddItem keysArr(i)
+        Next i
+    End If
+End Sub
+
+Private Sub ActualizarGruposPorTipo(ByVal tipoSel As String)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim dictG As Object
+    Dim keysArr As Variant
+    Dim i As Long
+    Dim grupoFila As String
+    Dim oldGrupo As String
+
+    tipoSel = Trim$(CStr(tipoSel))
+
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then Exit Sub
+
+    Set dictG = CreateObject("Scripting.Dictionary")
+    dictG.CompareMode = vbTextCompare
+    oldGrupo = Trim$(CStr(Me.gruposBox.Value))
+    vData = tbl.DataBodyRange.Value
+
+    For i = 1 To UBound(vData, 1)
+        If tipoSel = "" Or Trim$(CStr(vData(i, 1))) = tipoSel Then
+            grupoFila = Trim$(CStr(vData(i, 6)))
+            If grupoFila <> "" Then dictG(grupoFila) = 1
+        End If
+    Next i
+
+    bloqueaEventos = True
+    Me.gruposBox.Clear
+    If dictG.Count > 0 Then
+        keysArr = SortedKeysFromDict(dictG)
+        For i = LBound(keysArr) To UBound(keysArr)
+            Me.gruposBox.AddItem keysArr(i)
+        Next i
+
+        If dictG.Count = 1 Then
+            Me.gruposBox.Value = keysArr(LBound(keysArr))
+        ElseIf oldGrupo <> "" And dictG.Exists(oldGrupo) Then
+            Me.gruposBox.Value = oldGrupo
+        Else
+            Me.gruposBox.Value = ""
+        End If
+    End If
+    bloqueaEventos = False
+End Sub
+
+Private Sub ActualizarTiposPorGrupo(ByVal grupoSel As String)
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim dictT As Object
+    Dim keysArr As Variant
+    Dim i As Long
+    Dim tipoFila As String
+    Dim oldTipo As String
+
+    grupoSel = Trim$(CStr(grupoSel))
+
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then Exit Sub
+
+    Set dictT = CreateObject("Scripting.Dictionary")
+    dictT.CompareMode = vbTextCompare
+    oldTipo = Trim$(CStr(Me.tiposBox.Value))
+    vData = tbl.DataBodyRange.Value
+
+    For i = 1 To UBound(vData, 1)
+        If grupoSel = "" Or Trim$(CStr(vData(i, 6))) = grupoSel Then
+            tipoFila = Trim$(CStr(vData(i, 1)))
+            If tipoFila <> "" Then dictT(tipoFila) = 1
+        End If
+    Next i
+
+    bloqueaEventos = True
+    Me.tiposBox.Clear
+    If dictT.Count > 0 Then
+        keysArr = SortedKeysFromDict(dictT)
+        For i = LBound(keysArr) To UBound(keysArr)
+            Me.tiposBox.AddItem keysArr(i)
+        Next i
+
+        If dictT.Count = 1 Then
+            Me.tiposBox.Value = keysArr(LBound(keysArr))
+        ElseIf oldTipo <> "" And dictT.Exists(oldTipo) Then
+            Me.tiposBox.Value = oldTipo
+        Else
+            Me.tiposBox.Value = ""
+        End If
+    End If
+    bloqueaEventos = False
+End Sub
+
+Private Sub FiltrarListBox1()
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim vector() As Variant
+    Dim tipoSel As String
+    Dim grupoSel As String
+    Dim i As Long
+    Dim n As Long
+
+    Call labelsTamano(Me)
+
+    tipoSel = Trim$(CStr(Me.tiposBox.Value))
+    grupoSel = Trim$(CStr(Me.gruposBox.Value))
+
+    Set tbl = Exist.ListObjects("tabExistencias")
+    If tbl.ListRows.Count < 1 Then
+        Me.ListBox1.Clear
+        Exit Sub
+    End If
+
+    vData = tbl.DataBodyRange.Value
+    ReDim vector(1 To UBound(vData, 1) + 1, 1 To 4)
+
+    n = 0
+    For i = 1 To UBound(vData, 1)
+        If (tipoSel = "" Or Trim$(CStr(vData(i, 1))) = tipoSel) And _
+           (grupoSel = "" Or Trim$(CStr(vData(i, 6))) = grupoSel) Then
+            n = n + 1
+            vector(n, 1) = vData(i, 4)
+            vector(n, 2) = vData(i, 5)
+            vector(n, 3) = vData(i, 9)
+            vector(n, 4) = vData(i, 8)
+        End If
+    Next i
+
+    If n = 0 Then
+        Me.ListBox1.Clear
+        Exit Sub
+    End If
+
+    vector = Application.Transpose(vector)
+    ReDim Preserve vector(1 To 4, 1 To n + 1)
+    vector = Application.Transpose(vector)
+
+    Me.ListBox1.Clear
+    Me.ListBox1.List = vector
+End Sub
+
+Private Sub UserForm_Initialize()
+    Dim i As Integer, totalWidth As String
+    Dim j As Integer, totalWidth2 As String
+    Dim tabla
+    Dim celda As Range
+    Dim fin As Long
+
+   On Error Resume Next
+    If Exist.ListObjects("tabExistencias").AutoFilter.FilterMode Then
+        Exist.ListObjects("tabExistencias").AutoFilter.ShowAllData
+    End If
+    If consumo.ListObjects("DailyConsumption").AutoFilter.FilterMode Then
+        consumo.ListObjects("DailyConsumption").AutoFilter.ShowAllData
+    End If
+    If OPsheet.ListObjects("tabPO").AutoFilter.FilterMode Then
+        OPsheet.ListObjects("tabPO").AutoFilter.ShowAllData
+    End If
+    On Error GoTo 0
+    
+    UserForm4.Label10.Visible = False
+    UserForm4.Label11.Visible = False
+    Me.numPO.Visible = False
+    Me.MultiPage1.Pages(1).Visible = False
+
+    With Me.MultiPage1
+        .MultiRow = True
+    End With
+
+    With Me.ListBox1
+        .ColumnCount = 4
+        For i = 1 To ListBox1.ColumnCount
+            totalWidth = totalWidth & Sheets("Existencias").Columns(i).Width & ";"
+        Next i
+        .ColumnHeads = False
+        .TextAlign = fmTextAlignCenter
+        .Enabled = True
+    End With
+
+    With Me.articulo
+        fin = Exist.ListObjects("tabExistencias").ListRows.Count + 1
+        .Clear
+        For Each celda In ThisWorkbook.Sheets("Existencias").Range("D2:D" & fin)
+            If Not IsEmpty(celda.Value) Then
+                .AddItem celda.Value
+            End If
+        Next celda
+    End With
+End Sub
+
+Private Sub UserForm_Activate()
+    Dim dictConsumos As Object, dictGrupos As Object
+    Dim vDatos As Variant
+    Dim arrTop(1 To 10, 1 To 2) As Variant
+    Dim cantConsumo As Double
+    Dim pos As Long, p As Long, k As Variant
+    Dim miGrupo As String
+    
+    Dim alto As Long
+    Dim ancho As Long
+    Dim arrMedidas() As String
+    Dim arrCoords() As String
+    Dim anchoMonitor As Double
+    Dim altoMonitor As Double
+    Dim posicionTop As Double
+    Dim posicionLeft As Double
+    
+    Dim letraCaja As Long
+    Dim letraObjeto As Long
+    Dim letraCabeceras As Long
+    Dim letraTitulo As Long
+    Dim letraBoton As Long
+    Dim letraCheck As Long
+    
+    Dim alturaMulti As Double
+    Dim anchoMulti As Double
+    
+    Me.elementosPO.Visible = False
+    Me.lblPO3.Visible = False
+    Me.lblPO4.Visible = False
+    Me.lblPO5.Visible = False
+    Me.lblPO6.Visible = False
+    Me.lblPO7.Visible = False
+    Me.lblPO8.Visible = False
+    Me.lblDesc.Visible = False
+    Me.lblStock1.Visible = False
+    Me.lblStock2.Visible = False
+    Me.lblStock3.Visible = False
+    Me.MultiPage1.Pages.item(2).Visible = False
+    
+    '== Y ==
+    '552
+    '1036.5
+
+    '== X ==
+    '786
+    '1452
+    
+    arrMedidas = Split(TamañoMonitor, "x")
+    arrCoords = Split(CoordenadasMonitor, "/")
+    ancho = arrMedidas(0)
+    alto = arrMedidas(1)
+    posicionTop = arrMedidas(2)
+    posicionLeft = arrMedidas(3)
+    mi_ratio = alto / ancho 'Si el ratio es mayor a 0.55/0.56 la interfaz se rompe.
+    
+    If mi_ratio > 0.55 Then
+        Do
+            alto = alto - 35
+            mi_ratio = alto / ancho
+        Loop Until mi_ratio < 0.55
+    End If
+    
+    With Me
+        .Height = alto * 0.85
+        .Width = ancho * 0.85
+        .top = posicionTop + alto * 0.075
+        .left = posicionLeft + ancho * 0.075
+    End With
+    
+    '0.9411764705882353
+    '39.3
+    '27.6
+    With Me.MultiPage1
+        '.Height = Me.Width * 0.5
+        .Height = Me.Height * 0.93
+        .Width = ancho * 0.828
+        .top = 0
+        .left = (Me.Width - .Width) * 0.25
+    End With
+    'Debug.Print mi_ratio
+
+    letraCaja = Me.Height * 0.022
+    letraObjeto = Me.Height * 0.024
+    letraCabeceras = Me.Height * 0.024
+    letraTitulo = Me.Height * 0.024
+    letraBoton = Me.Height * 0.028
+    letraCheck = Me.Height * 0.03
+    
+    '====== Data de Listbox1 y gruposBox ======
+    ' Listbox1
+    Set dictConsumos = CreateObject("Scripting.Dictionary")
+    dictConsumos.CompareMode = vbTextCompare
+    
+    If consumo.ListObjects("DailyConsumption").ListRows.Count > 0 Then
+        vDatos = consumo.ListObjects("DailyConsumption").DataBodyRange.Value
+        For i = 1 To UBound(vDatos, 1)
+            If Not IsEmpty(vDatos(i, 1)) Then
+                cantConsumo = Abs(Val(vDatos(i, 4)))
+                If dictConsumos.Exists(CStr(vDatos(i, 1))) Then
+                    dictConsumos(CStr(vDatos(i, 1))) = dictConsumos(CStr(vDatos(i, 1))) + cantConsumo
+                Else
+                    dictConsumos.Add CStr(vDatos(i, 1)), cantConsumo
+                End If
+            End If
+        Next i
+    End If
+    
+    For i = 1 To 10
+        arrTop(i, 1) = "": arrTop(i, 2) = 0
+    Next i
+    
+    For Each k In dictConsumos.keys
+        cantConsumo = dictConsumos(k)
+        If cantConsumo > arrTop(10, 2) Then
+            pos = 10
+            
+            Do While pos > 1
+                If cantConsumo > arrTop(pos - 1, 2) Then
+                    pos = pos - 1
+                Else
+                    Exit Do
+                End If
+            Loop
+            
+            For p = 10 To pos + 1 Step -1
+                arrTop(p, 1) = arrTop(p - 1, 1)
+                arrTop(p, 2) = arrTop(p - 1, 2)
+            Next p
+            arrTop(pos, 1) = k
+            arrTop(pos, 2) = cantConsumo
+        End If
+    Next k
+    
+    Call CargarComboUnico(Me.tiposBox, 1)
+    Call CargarComboUnico(Me.gruposBox, 6)
+
+    Exist.ListObjects("tabExistencias").Range.Sort _
+        key1:=Exist.ListObjects("tabExistencias").Range.Columns(4), _
+        Order1:=xlAscending, Header:=xlYes
+    '=====================================================
+    
+    With Me.Label1  'Label Seleccionar articulo
+        .Height = Me.Height * 0.03
+        .Width = Me.Width * 0.1
+        .top = Me.Height * 0.045
+        .left = Me.Width * 0.02
+        .Font = "Bierstadt"
+        .Font.Bold = True
+        .Font.Size = letraTitulo
+    End With
+    
+    With Me.articulo    'ComboBox Articulos
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.2
+        .top = Me.Label1.top + Me.Label1.Height
+        .left = Me.Label1.left
+        .Font = "Bierstadt"
+        .Font.Size = letraObjeto
+    End With
+    
+    With Me.buscar  'boton lupa buscar
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.025
+        .top = Me.articulo.top
+        .left = Me.articulo.left + Me.articulo.Width * 1.04
+    End With
+    
+    With Me.boton2
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.03
+        .top = Me.articulo.top - Me.articulo.Height / 4
+        .left = Me.buscar.left + Me.buscar.Width * 1.3
+        .Font.Size = .Height * 0.5
+    End With
+    
+    With Me.Label32  'Label tipo
+        .Height = Me.Height * 0.03
+        .Width = Me.Width * 0.14
+        .top = Me.Label1.top
+        .left = Me.Label1.left + Me.Label1.Width * 2.8
+        .Font = "Bierstadt"
+        .Font.Bold = True
+        .Font.Size = letraTitulo
+    End With
+    
+    With Me.tiposBox   'ComboBox de tipos
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.2
+        .top = Me.Label32.top + Me.Label32.Height
+        .left = Me.Label32.left
+        .Font = "Bierstadt"
+        .Font.Size = letraObjeto
+    End With
+    
+    With Me.Label3  'Label grupos
+        .Height = Me.Height * 0.03
+        .Width = Me.Width * 0.14
+        .top = Me.Label1.top
+        .left = Me.Label32.left + Me.Label32.Width * 1.6
+        .Font = "Bierstadt"
+        .Font.Bold = True
+        .Font.Size = letraTitulo
+    End With
+    
+    With Me.gruposBox   'ComboBox de grupos
+        .Height = Me.Height * 0.0415
+        .Width = Me.Width * 0.2
+        .top = Me.Label3.top + Me.Label3.Height
+        .left = Me.Label3.left
+        .Font = "Bierstadt"
+        .Font.Size = letraObjeto
+    End With
+    
+    With Me.lblArt
+        .Height = Me.Height * 0.041
+        .Width = (Me.Width * 0.9) * 0.7
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.02
+        .Font = "Bierstadt"
+        .Font.Size = letraCabeceras
+        .Caption = "Artículo"
+    End With
+    
+    With Me.lblDesc
+        .Height = Me.Height * 0.041
+        .Width = (Me.Width * 0.9) * 0.35
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.02 + Me.lblArt.Width
+        .Font = "Bierstadt"
+        .Font.Size = letraCabeceras
+        .Caption = "Descripción"
+    End With
+    
+    With Me.lblCons
+        .Height = Me.Height * 0.041
+        .Width = (Me.Width * 0.9) * 0.3
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.02 + Me.lblArt.Width
+        .Font = "Bierstadt"
+        .Font.Size = letraCabeceras
+        .Caption = "Consumo"
+    End With
+    
+    With Me.ListBox1
+        .Height = Me.Height * 0.6
+        .Width = Me.Width * 0.9
+        .top = Me.Height * 0.2
+        .left = Me.Width * 0.02
+        .List = arrTop
+        .Font = "Bierstadt"
+        .Font.Size = letraCaja
+        .ColumnWidths = Me.ListBox1.Width * 0.7 & ";" & Me.ListBox1.Width * 0.3
+    End With
+
+    With Me.eliminarFila
+        .top = Me.MultiPage1.Height * 0.05
+        .left = Me.MultiPage1.Width * 0.49
+    End With
+    
+    With Me.btDescontar
+        .Height = Me.Height * 0.07
+        .Width = Me.Width * 0.08
+        .top = Me.Height * 0.062
+        .left = Me.Width * 0.73
+        .Visible = False
+    End With
+
+    With Me.btAgregar
+        .Height = Me.Height * 0.07
+        .Width = Me.Width * 0.08
+        .top = Me.Height * 0.062
+        .left = Me.Width * 0.835
+        '.Visible = False
+    End With
+    
+    Call ordenesDeCompra
+
+    With Me.elementosPO
+        .Height = Me.Height * 0.6
+        .Width = Me.Width * 0.9
+        .top = Me.Height * 0.2
+        .left = Me.Width * 0.02
+        .ColumnCount = 6
+        .ColumnWidths = Me.elementosPO.Width * 0.09 & ";" & _
+                        Me.elementosPO.Width * 0.52 & ";" & _
+                        Me.elementosPO.Width * 0.08 & ";" & _
+                        Me.elementosPO.Width * 0.08 & ";" & _
+                        Me.elementosPO.Width * 0.1 & ";" & _
+                        Me.elementosPO.Width * 0.11 & ";"
+        .TextAlign = fmTextAlignCenter
+    End With
+    
+    With Me.numPO
+        .Height = Me.Height * 0.04
+        .Width = Me.Width * 0.2
+        .top = Me.Height * 0.02
+        .left = Me.Width * 0.4
+        .Font.Size = Me.Height * 0.032
+    End With
+    
+    With Me.Label2
+        .Height = Me.Height * 0.033
+        .Width = Me.Width * 0.15
+        .top = Me.Height * 0.045
+        .left = Me.Width * 0.02
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.escribirOrden
+        .Height = Me.Height * 0.055
+        .Width = Me.Width * 0.25
+        .top = Me.Height * 0.08
+        .left = Me.Width * 0.02
+        .Font.Size = Me.Height * 0.024
+        .Enabled = True
+        .WordWrap = True
+        .Multiline = True
+        .Locked = False
+    End With
+
+    With Me.lblPO
+        .Caption = "PO"
+        .Height = Me.Height * 0.041
+        .Width = Me.elementosPO.Width * 0.5
+        .top = Me.Height * 0.16
+        .left = Me.elementosPO.left
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.lblPO2
+        .Caption = "Estatus"
+        .Height = Me.Height * 0.041
+        .Width = Me.elementosPO.Width * 0.5
+        .top = Me.Height * 0.16
+        .left = Me.elementosPO.left + Me.lblPO.Width
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.lblPO3
+        .Caption = "Fecha PO"
+        .Height = Me.Height * 0.041
+        .Width = Me.elementosPO.Width * 0.09
+        .top = Me.Height * 0.16
+        .left = Me.elementosPO.left
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.lblPO4
+        .Caption = "Artículo"
+        .Height = Me.Height * 0.041
+        .Width = Me.elementosPO.Width * 0.52
+        .top = Me.Height * 0.16
+        .left = Me.elementosPO.left + Me.lblPO3.Width
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.lblPO5
+        .Caption = "Qty PO"
+        .Height = Me.Height * 0.041
+        .Width = Me.elementosPO.Width * 0.08
+        .top = Me.Height * 0.16
+        .left = Me.lblPO4.left + Me.lblPO4.Width
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.lblPO6
+        .Caption = "Recibido"
+        .Height = Me.Height * 0.041
+        .Width = Me.elementosPO.Width * 0.08
+        .top = Me.Height * 0.16
+        .left = Me.lblPO5.left + Me.lblPO5.Width
+        .Font.Size = Me.Height * 0.029
+    End With
+
+    With Me.lblPO7
+        .Caption = "Estatus"
+        .Height = Me.Height * 0.041
+        .Width = Me.elementosPO.Width * 0.1
+        .top = Me.Height * 0.16
+        .left = Me.lblPO6.left + Me.lblPO6.Width
+        .Font.Size = Me.Height * 0.029
+    End With
+
+    With Me.lblPO8
+        .Caption = "Última entrega"
+        .Height = Me.Height * 0.041
+        .Width = Me.elementosPO.Width * 0.13
+        .top = Me.Height * 0.16
+        .left = Me.lblPO7.left + Me.lblPO7.Width
+        .Font.Size = Me.Height * 0.029
+    End With
+
+    With Me.botonRegresar
+        .Height = Me.Height * 0.0475
+        .Width = Me.Width * 0.045
+        .top = Me.Height * 0.08
+        .left = Me.Width * 0.35
+        .Font.Size = Me.botonRegresar.Height * 0.5
+    End With
+    
+    With Me.CommandButton2
+        .Height = Me.escribirOrden.Height * 0.8
+        .Width = Me.Width * 0.025
+        .top = Me.escribirOrden.top + Me.escribirOrden.Height * 0.05
+        .left = Me.escribirOrden.left + Me.escribirOrden.Width * 1.01
+        .Font.Size = Me.CommandButton2.Height * 0.45
+    End With
+    
+    Call elementosPageDetalles(Me)
+    RedimensionarPage3
+    Me.btnLimpiarFiltrosAcum.Visible = False
+
+    Me.labFe.Visible = False
+    Me.labArt.Visible = False
+    Me.labRef.Visible = False
+    Me.labNu.Visible = False
+    Me.labEnt.Visible = False
+    
+End Sub
+
+Private Sub CommandButtonClose_Click()
+    Unload Me
+End Sub
+
+Private Sub MultiPage1_Change()
+    If Me.MultiPage1.Value = 3 Then
+        bloqueaEventos = True
+        
+        Call RedimensionarPage3
+        Call EstablecerVistaAcumulado(False)
+        Me.tglFiltroTipo.Value = Null
+        bloqueaEventos = False
+        If Me.cmbAnio.ListCount = 0 Then
+            Call ConfigurarAniosInicial
+        End If
+    End If
+End Sub
+
+Private Sub EstablecerVistaAcumulado(ByVal mostrarAcumulado As Boolean)
+    Me.listBoxHistorial.Visible = Not mostrarAcumulado
+    Me.txtBuscarArticulo.Visible = Not mostrarAcumulado
+    Me.cmbFechaInicio.Visible = Not mostrarAcumulado
+    Me.cmbFechaFin.Visible = Not mostrarAcumulado
+    Me.btnLimpiarFiltros.Visible = Not mostrarAcumulado
+    Me.tglFiltroTipo.Visible = Not mostrarAcumulado
+    Me.Label19.Visible = Not mostrarAcumulado
+    Me.Label35.Visible = Not mostrarAcumulado
+    Me.Label20.Visible = Not mostrarAcumulado
+    Me.Label21.Visible = Not mostrarAcumulado
+    Me.Label22.Visible = Not mostrarAcumulado
+    Me.Label23.Visible = Not mostrarAcumulado
+
+    Me.listBoxAcumulado.Visible = mostrarAcumulado
+    Me.txtBuscarArtAcum.Visible = mostrarAcumulado
+    Me.cmbMesInicioAcum.Visible = mostrarAcumulado
+    Me.cmbMesFinAcum.Visible = mostrarAcumulado
+    Me.btnLimpiarFiltrosAcum.Visible = mostrarAcumulado
+    Me.labFe.Visible = mostrarAcumulado
+    Me.labArt.Visible = mostrarAcumulado
+    Me.labRef.Visible = mostrarAcumulado
+    Me.labNu.Visible = mostrarAcumulado
+    Me.labEnt.Visible = mostrarAcumulado
+End Sub
+
+Private Sub tiposBox_Change()
+    If bloqueaEventos Then Exit Sub
+    Call ActualizarGruposPorTipo(Me.tiposBox.Value)
+    Call FiltrarListBox1
+End Sub
+
+Private Sub tiposBox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Me.tiposBox.Value = ""
+End Sub
+
+Private Sub gruposBox_Change()
+    If bloqueaEventos Then Exit Sub
+    Call ActualizarTiposPorGrupo(Me.gruposBox.Value)
+    Call FiltrarListBox1
+End Sub
+
+Private Sub gruposBox_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Me.gruposBox.Value = ""
+End Sub
+
+Private Sub buscar_Click()
+    Dim datos() As Variant
+    Dim filaDestino As Long
+    Dim itemBD As String
+    Dim tamano As Long
+    Dim fechaActual As Date
+    Dim i As Long
+    
+    Call labelsTamano(Me)
+    Me.gruposBox.Value = ""
+    itemBD = Me.articulo.Value
+    tamano = Exist.Range("A" & Exist.Rows.Count).End(xlUp).row
+    filaDestino = 1
+    
+    ReDim datos(1 To 1, 0 To 3) 'ReDim datos(1 To 1, 0 To 4)
+    If Not itemBD = "" Then
+        For i = 2 To tamano
+            If Exist.Range("D" & i).Value = itemBD Then
+                datos(filaDestino, 0) = Exist.Range("D" & i).Value
+                datos(filaDestino, 1) = Exist.Range("E" & i).Value
+                datos(filaDestino, 2) = Exist.Range("I" & i).Value
+                datos(filaDestino, 3) = Exist.Range("H" & i).Value
+                'datos(filaDestino, 4) = Exist.Range("J" & i).Value
+                filaDestino = filaDestino + 1
+            End If
+        Next i
+        Me.ListBox1.Clear
+        Me.ListBox1.List = datos
+        fechaActual = Date
+    End If
+End Sub
+
+Private Sub ListBox1_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Call plantilla(Me)
+End Sub
+
+Private Sub eliminarFila_Click()
+    Dim aaa As ListObject
+    Set aaa = consumos.ListObjects("DailyConsumption")
+End Sub
+
+Private Sub btDescontar_Click()
+    UserForm4.modo = True
+    Unload Me
+    UserForm4.Show vbModeless
+End Sub
+
+Private Sub btAgregar_Click()
+    UserForm4.modo = False
+    Unload Me
+    UserForm4.Show vbModeless
+End Sub
+
+Private Sub opListB_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    Dim orden As Long
+    Dim fila As Long
+    Dim n As Long
+    Dim vector() As Variant
+    Dim k As Long
+    Dim celda As Range
+    
+    orden = Me.opListB.ListIndex
+    If orden <> -1 Then
+        If Me.opListB.List(orden) = "" Then
+           orden = orden - 1
+        End If
+        Me.numPO.Caption = "No. orden: " & Me.opListB.List(orden)
+        Me.numPO.Visible = True
+        Me.elementosPO.Visible = True
+        Me.lblPO3.Visible = True
+        Me.lblPO4.Visible = True
+        Me.lblPO5.Visible = True
+        Me.lblPO6.Visible = True
+        Me.lblPO7.Visible = True
+        Me.lblPO8.Visible = True
+        Me.opListB.Visible = False
+        Me.lblPO.Visible = False
+        Me.lblPO2.Visible = False
+        
+        fila = OPsheet.ListObjects("tabPO").ListRows.Count + 1
+        ReDim vector(1 To 100, 1 To 6)
+        
+        n = 2
+        k = 1
+        For Each celda In OPsheet.Range("C2:C" & fila)
+            If celda = Me.opListB.List(orden) Then
+                vector(k, 1) = OPsheet.Range("B" & n).Value
+                vector(k, 2) = OPsheet.Range("D" & n).Value
+                vector(k, 3) = OPsheet.Range("F" & n).Value
+                vector(k, 4) = OPsheet.Range("G" & n).Value
+                vector(k, 5) = OPsheet.Range("H" & n).Value
+                vector(k, 6) = OPsheet.Range("I" & n).Value
+                k = k + 1
+            End If
+            n = n + 1
+        Next celda
+        
+        vector = Application.Transpose(vector)
+        ReDim Preserve vector(1 To 6, 1 To k)
+        vector = Application.Transpose(vector)
+        Me.elementosPO.List = vector
+    Else
+        MsgBox "Selecciona una orden.", vbExclamation, "Error"
+    End If
+End Sub
+
+Private Sub CommandButton2_Click()
+    Me.escribirOrden.Value = ""
+End Sub
+
+Private Sub escribirOrden_change()
+    Dim numOrden As String
+    Dim dict As Object
+    Dim limite As Long
+    Dim i As Long
+    Dim valCelda As Variant
+    
+    numOrden = UCase(Me.escribirOrden.Value)
+    If numOrden <> "" Then
+        Set dict = CreateObject("Scripting.Dictionary")
+        limite = OPsheet.Range("C" & OPsheet.Rows.Count).End(xlUp).row
+        
+        For i = 2 To limite
+            valCelda = OPsheet.Range("C" & i).Value
+            If InStr(UCase(CStr(valCelda)), numOrden) > 0 Then
+                If Not IsEmpty(valCelda) And valCelda <> "" Then
+                    dict(valCelda) = 1
+                End If
+            End If
+        Next i
+        Me.opListB.Clear
+        If dict.Count > 0 Then
+            Me.opListB.List = dict.keys
+        End If
+    Else
+        Call ordenesDeCompra
+    End If
+End Sub
+
+Private Sub ordenesDeCompra()
+    Dim dict As Object
+    Dim nFilas As Long
+    Dim array1 As Variant
+    Dim orden As Range
+    
+    Set dict = CreateObject("Scripting.Dictionary")
+    nFilas = OPsheet.ListObjects("tabPO").ListRows.Count
+    
+    For Each orden In OPsheet.Range("C2:C" & nFilas)
+        If orden.Value <> "" Then
+            dict(orden.Value) = 1
+        End If
+    Next orden
+    Me.opListB.List = dict.keys
+    
+    With Me.opListB
+        .Height = Me.Height * 0.6
+        .Width = Me.Width * 0.9
+        .top = Me.Height * 0.2
+        .left = Me.Width * 0.02
+        .ColumnCount = 2
+        .ColumnWidths = .Width * 0.5 & ";" & .Width * 0.5
+        '.TextAlign = fmTextAlignCenter
+    End With
+End Sub
+
+Private Sub botonRegresar_click()
+    Me.elementosPO.Visible = False
+    Me.numPO.Visible = False
+    Me.lblPO3.Visible = False
+    Me.lblPO4.Visible = False
+    Me.lblPO5.Visible = False
+    Me.lblPO6.Visible = False
+    Me.lblPO7.Visible = False
+    Me.lblPO8.Visible = False
+    Me.opListB.Visible = True
+    Me.lblPO.Visible = True
+    Me.lblPO2.Visible = True
+End Sub
+
+Private Sub btnAcumulado_Click()
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
+    
+    If Me.listBoxHistorial.Visible = True Then
+        Call EstablecerVistaAcumulado(True)
+        Call CargarFechasPorAnio
+        Call FiltrarAcumulado
+    Else
+        Call EstablecerVistaAcumulado(False)
+        Call CargarFechasPorAnio
+        Call FiltrarHistorial
+    End If
+    
+    Application.EnableEvents = True
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
+Sub ConfigurarAniosInicial()
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim i As Long
+    Dim dictAnios As Object
+    Dim anioVal As String
+    Dim maxAnio As Long
+    
+    Set tbl = consumo.ListObjects("DailyConsumption")
+    Set dictAnios = CreateObject("Scripting.Dictionary")
+    
+    bloqueaEventos = True
+    Me.cmbAnio.Clear
+    maxAnio = 0
+    
+    If tbl.ListRows.Count > 0 Then
+        vData = tbl.DataBodyRange.Value
+        For i = 1 To UBound(vData, 1)
+            If IsDate(vData(i, 5)) Then
+                anioVal = CStr(Year(CDate(vData(i, 5))))
+                If Not dictAnios.Exists(anioVal) Then
+                    dictAnios.Add anioVal, 1
+                    Me.cmbAnio.AddItem anioVal
+                    If CLng(anioVal) > maxAnio Then maxAnio = CLng(anioVal)
+                End If
+            End If
+        Next i
+    End If
+    
+    If maxAnio > 0 Then
+        Me.cmbAnio.Value = CStr(maxAnio)
+    End If
+    
+    bloqueaEventos = False
+    
+    If Me.cmbAnio.Value <> "" Then
+        Call CargarFechasPorAnio
+        If Me.listBoxHistorial.Visible = True Then
+            Call FiltrarHistorial
+        Else
+            Call FiltrarAcumulado
+        End If
+    End If
+End Sub
+
+Sub CargarFechasPorAnio()
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim i As Long, j As Long
+    Dim dictDias As Object, dictMeses As Object
+    Dim fechaVal As Date
+    Dim anioSel As Long
+    Dim arrDias() As Variant, arrMeses() As Variant
+    Dim temp As Variant
+    
+    Set tbl = consumo.ListObjects("DailyConsumption")
+    Set dictDias = CreateObject("Scripting.Dictionary")
+    Set dictMeses = CreateObject("Scripting.Dictionary")
+    
+    If Me.cmbAnio.Value = "" Or Me.cmbAnio.Value = "Todos" Then Exit Sub
+    anioSel = CLng(Me.cmbAnio.Value)
+    
+    bloqueaEventos = True
+    
+    Me.cmbFechaInicio.Clear
+    Me.cmbFechaFin.Clear
+    Me.cmbMesInicioAcum.Clear
+    Me.cmbMesFinAcum.Clear
+    
+    Me.cmbFechaInicio.AddItem "-"
+    Me.cmbFechaFin.AddItem "-"
+    Me.cmbMesInicioAcum.AddItem "-"
+    Me.cmbMesFinAcum.AddItem "-"
+    
+    If tbl.ListRows.Count > 0 Then
+        vData = tbl.DataBodyRange.Value
+        For i = 1 To UBound(vData, 1)
+            If IsDate(vData(i, 5)) Then
+                fechaVal = CDate(vData(i, 5))
+                If Year(fechaVal) = anioSel Then
+                    If Not dictDias.Exists(CLng(fechaVal)) Then
+                        dictDias.Add CLng(fechaVal), 1
+                    End If
+                    
+                    Dim mesStr As String
+                    mesStr = Format(fechaVal, "yyyy-mm")
+                    If Not dictMeses.Exists(mesStr) Then
+                        dictMeses.Add mesStr, 1
+                    End If
+                End If
+            End If
+        Next i
+    End If
+    
+    If dictDias.Count > 0 Then
+        arrDias = dictDias.keys
+        For i = LBound(arrDias) To UBound(arrDias) - 1
+            For j = i + 1 To UBound(arrDias)
+                If arrDias(i) > arrDias(j) Then
+                    temp = arrDias(i)
+                    arrDias(i) = arrDias(j)
+                    arrDias(j) = temp
+                End If
+            Next j
+        Next i
+        
+        For i = LBound(arrDias) To UBound(arrDias)
+            Me.cmbFechaInicio.AddItem CStr(CDate(arrDias(i)))
+        Next i
+        For i = UBound(arrDias) To LBound(arrDias) Step -1
+            Me.cmbFechaFin.AddItem CStr(CDate(arrDias(i)))
+        Next i
+    End If
+    
+    If dictMeses.Count > 0 Then
+        arrMeses = dictMeses.keys
+        For i = LBound(arrMeses) To UBound(arrMeses) - 1
+            For j = i + 1 To UBound(arrMeses)
+                If arrMeses(i) > arrMeses(j) Then
+                    temp = arrMeses(i)
+                    arrMeses(i) = arrMeses(j)
+                    arrMeses(j) = temp
+                End If
+            Next j
+        Next i
+        
+        For i = LBound(arrMeses) To UBound(arrMeses)
+            Me.cmbMesInicioAcum.AddItem arrMeses(i)
+        Next i
+        For i = UBound(arrMeses) To LBound(arrMeses) Step -1
+            Me.cmbMesFinAcum.AddItem arrMeses(i)
+        Next i
+    End If
+    
+    Me.cmbFechaInicio.Value = "-"
+    Me.cmbFechaFin.Value = "-"
+    Me.cmbMesInicioAcum.Value = "-"
+    Me.cmbMesFinAcum.Value = "-"
+    bloqueaEventos = False
+End Sub
+
+Sub FiltrarHistorial()
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    On Error GoTo ErrorHandler
+    
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim arr() As Variant
+    Dim i As Long, k As Long
+    Dim artVal As String, searchStr As String
+    Dim anioActual As Long, anioFila As Long
+    Dim fecVal As Date
+    Dim valMov As Double
+    Dim condicionArt As String, tipoMov As String
+    Dim pasaInicio As Boolean, pasaFin As Boolean, pasaTipo As Boolean
+    Dim fechaInicioDate As Long, fechaFinDate As Long
+
+    Set tbl = consumo.ListObjects("DailyConsumption")
+    If tbl.ListRows.Count < 1 Then GoTo Salida
+
+    vData = tbl.DataBodyRange.Value
+
+    searchStr = UCase(Me.txtBuscarArticulo.Value)
+    If searchStr = "" Then searchStr = "*"
+    
+    anioActual = 0
+    If Me.cmbAnio.Value <> "" And Me.cmbAnio.Value <> "Todos" Then
+        anioActual = CLng(Me.cmbAnio.Value)
+    End If
+
+    fechaInicioDate = 0
+    fechaFinDate = 0
+    If Me.cmbFechaInicio.Value <> "-" And Me.cmbFechaInicio.Value <> "" Then
+        fechaInicioDate = CLng(CDate(Me.cmbFechaInicio.Value))
+    End If
+    If Me.cmbFechaFin.Value <> "-" And Me.cmbFechaFin.Value <> "" Then
+        fechaFinDate = CLng(CDate(Me.cmbFechaFin.Value))
+    End If
+
+    Me.listBoxHistorial.Clear
+    ReDim arr(1 To UBound(vData, 1), 1 To 6)
+    k = 1
+
+    For i = UBound(vData, 1) To 1 Step -1
+        If IsDate(vData(i, 5)) Then
+            fecVal = CDate(vData(i, 5))
+            anioFila = Year(fecVal)
+            If anioActual = 0 Or anioFila = anioActual Then
+                artVal = CStr(vData(i, 1))
+                If searchStr = "*" Or InStr(1, UCase(artVal), searchStr, vbTextCompare) > 0 Then
+                    
+                    condicionArt = CStr(vData(i, 2))
+                    valMov = Val(vData(i, 4))
+                    
+                    If valMov < 0 Then
+                        tipoMov = "Retiros"
+                    Else
+                        tipoMov = "Entradas"
+                    End If
+                    
+                    pasaTipo = IsNull(Me.tglFiltroTipo.Value) Or _
+                              (Me.tglFiltroTipo.Value = True And tipoMov = "Retiros") Or _
+                              (Me.tglFiltroTipo.Value = False And tipoMov = "Entradas")
+                    
+                    pasaInicio = True
+                    pasaFin = True
+                    If fechaInicioDate > 0 Then pasaInicio = (CLng(fecVal) >= fechaInicioDate)
+                    If fechaFinDate > 0 Then pasaFin = (CLng(fecVal) <= fechaFinDate)
+
+                    If pasaInicio And pasaFin And pasaTipo Then
+                        arr(k, 1) = vData(i, 5)
+                        arr(k, 2) = vData(i, 6)
+                        arr(k, 3) = artVal
+                        'arr(k, 4) = IIf(tipoMov = "Retiros", "Descuento", "Entrada")
+                        arr(k, 4) = vData(i, 3)
+                        arr(k, 5) = condicionArt
+                        arr(k, 6) = valMov
+                        k = k + 1
+                    End If
+                End If
+            End If
+        End If
+    Next i
+
+    If k > 1 Then
+        Dim finalArr() As Variant
+        ReDim finalArr(1 To k - 1, 1 To 6)
+        Dim j As Long
+        For j = 1 To k - 1
+            finalArr(j, 1) = arr(j, 1)
+            finalArr(j, 2) = arr(j, 2)
+            finalArr(j, 3) = arr(j, 3)
+            finalArr(j, 4) = arr(j, 4)
+            finalArr(j, 5) = arr(j, 5)
+            finalArr(j, 6) = arr(j, 6)
+        Next j
+        With Me.listBoxHistorial
+            .ColumnCount = 6
+            .ColumnWidths = .Width * 0.17 & ";" & _
+                            .Width * 0.18 & ";" & _
+                            .Width * 0.35 & ";" & _
+                            .Width * 0.11 & ";" & _
+                            .Width * 0.11 & ";" & _
+                            .Width * 0.07
+            .List = finalArr
+        End With
+    End If
+
+Salida:
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Exit Sub
+ErrorHandler:
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    MsgBox "Error en FiltrarHistorial: " & Err.Description, vbExclamation
+End Sub
+
+Sub FiltrarAcumulado()
+    Application.Calculation = xlCalculationManual
+    Dim tbl As ListObject
+    Dim vData As Variant
+    Dim dict As Object
+    Dim i As Long, j As Long, rowIdx As Long
+    Dim mesKey As String, artVal As String, clave As String
+    Dim mesInicio As String, mesFin As String, searchStr As String
+    Dim pasaInicio As Boolean, pasaFin As Boolean
+    Dim keysArray() As Variant, temp As Variant, finalArr() As Variant, partes() As String
+    Dim valores(1 To 3) As Double
+    Dim anioActual As Long, anioFila As Long
+    Dim fecVal As Date
+    Dim m As Variant
+    Dim valMov As Double
+    Dim condicionArt As String
+
+    Set tbl = consumo.ListObjects("DailyConsumption")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    If tbl.ListRows.Count < 1 Then GoTo SalidaAcum
+    vData = tbl.DataBodyRange.Value
+
+    searchStr = UCase(Me.txtBuscarArtAcum.Value)
+    If searchStr = "" Then searchStr = "*"
+    
+    anioActual = 0
+    If Me.cmbAnio.Value <> "" And Me.cmbAnio.Value <> "Todos" Then
+        anioActual = CLng(Me.cmbAnio.Value)
+    End If
+    
+    mesInicio = Me.cmbMesInicioAcum.Value
+    mesFin = Me.cmbMesFinAcum.Value
+    
+    Me.listBoxAcumulado.Clear
+    
+    For i = 1 To UBound(vData, 1)
+        If IsDate(vData(i, 5)) Then
+            fecVal = CDate(vData(i, 5))
+            anioFila = Year(fecVal)
+            If anioActual = 0 Or anioFila = anioActual Then
+                artVal = CStr(vData(i, 1))
+                If searchStr = "*" Or InStr(1, UCase(artVal), searchStr, vbTextCompare) > 0 Then
+                    mesKey = Format(fecVal, "yyyy-mm")
+                    
+                    pasaInicio = False
+                    If mesInicio = "-" Or mesInicio = "" Then
+                        pasaInicio = True
+                    ElseIf mesKey >= mesInicio Then
+                        pasaInicio = True
+                    End If
+                    
+                    pasaFin = False
+                    If mesFin = "-" Or mesFin = "" Then
+                        pasaFin = True
+                    ElseIf mesKey <= mesFin Then
+                        pasaFin = True
+                    End If
+                    
+                    If pasaInicio And pasaFin Then
+                        clave = mesKey & "|" & artVal
+                        condicionArt = CStr(vData(i, 2))
+                        valMov = Val(vData(i, 4))
+                        
+                        If dict.Exists(clave) Then
+                            valores(1) = dict(clave)(1)
+                            valores(2) = dict(clave)(2)
+                            valores(3) = dict(clave)(3)
+                        Else
+                            valores(1) = 0
+                            valores(2) = 0
+                            valores(3) = 0
+                        End If
+                        
+                        If valMov < 0 Then
+                            If UCase(condicionArt) = "REFORMULADO" Then
+                                valores(1) = valores(1) + Abs(valMov)
+                            Else
+                                valores(2) = valores(2) + Abs(valMov)
+                            End If
+                        ElseIf valMov > 0 Then
+                            valores(3) = valores(3) + valMov
+                        End If
+                        
+                        dict(clave) = valores
+                    End If
+                End If
+            End If
+        End If
+    Next i
+    
+    If dict.Count > 0 Then
+        ReDim keysArray(0 To dict.Count - 1)
+        rowIdx = 0
+        For Each m In dict.keys
+            keysArray(rowIdx) = m
+            rowIdx = rowIdx + 1
+        Next m
+        
+        For i = LBound(keysArray) To UBound(keysArray) - 1
+            For j = i + 1 To UBound(keysArray)
+                If keysArray(i) < keysArray(j) Then
+                    temp = keysArray(i)
+                    keysArray(i) = keysArray(j)
+                    keysArray(j) = temp
+                End If
+            Next j
+        Next i
+        
+        ReDim finalArr(1 To dict.Count, 1 To 5)
+        rowIdx = 1
+        For i = LBound(keysArray) To UBound(keysArray)
+            partes = Split(keysArray(i), "|")
+            finalArr(rowIdx, 1) = partes(0)
+            finalArr(rowIdx, 2) = partes(1)
+            finalArr(rowIdx, 3) = dict(keysArray(i))(1)
+            finalArr(rowIdx, 4) = dict(keysArray(i))(2)
+            finalArr(rowIdx, 5) = dict(keysArray(i))(3)
+            rowIdx = rowIdx + 1
+        Next i
+        
+        With Me.listBoxAcumulado
+            .ColumnCount = 5
+            .ColumnWidths = .Width * 0.11 & ";" & _
+                            .Width * 0.5 & ";" & _
+                            .Width * 0.15 & ";" & _
+                            .Width * 0.15 & ";" & _
+                            .Width * 0.08
+            .List = finalArr
+        End With
+    End If
+
+SalidaAcum:
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
+Private Sub cmbAnio_Change()
+    If bloqueaEventos Then Exit Sub
+    If Me.cmbAnio.Value <> "" Then
+        Call CargarFechasPorAnio
+        bloqueaEventos = True
+        'Me.txtBuscarArticulo.Value = ""
+        'Me.txtBuscarArtAcum.Value = ""
+        bloqueaEventos = False
+        If Me.listBoxHistorial.Visible = True Then
+            Call FiltrarHistorial
+        Else
+            Call FiltrarAcumulado
+        End If
+    End If
+End Sub
+
+Private Sub txtBuscarArticulo_Change()
+    If bloqueaEventos Then Exit Sub
+    Me.txtBuscarArtAcum.Value = Me.txtBuscarArticulo.Value
+    Call FiltrarHistorial
+End Sub
+
+Private Sub cmbFechaInicio_Change()
+    If bloqueaEventos Then Exit Sub
+    Call FiltrarHistorial
+End Sub
+
+Private Sub cmbFechaFin_Change()
+    If bloqueaEventos Then Exit Sub
+    Call FiltrarHistorial
+End Sub
+
+Private Sub tglFiltroTipo_Change()
+    If bloqueaEventos Then Exit Sub
+    If IsNull(Me.tglFiltroTipo.Value) Then
+        Me.tglFiltroTipo.Caption = "Todo"
+    ElseIf Me.tglFiltroTipo.Value = True Then
+        Me.tglFiltroTipo.Caption = "Retiros"
+    Else
+        Me.tglFiltroTipo.Caption = "Entradas"
+    End If
+    Call FiltrarHistorial
+End Sub
+
+Private Sub txtBuscarArtAcum_Change()
+    If bloqueaEventos Then Exit Sub
+    Me.txtBuscarArticulo.Value = Me.txtBuscarArtAcum.Value
+    Call FiltrarAcumulado
+End Sub
+
+Private Sub cmbMesInicioAcum_Change()
+    If bloqueaEventos Then Exit Sub
+    If Me.cmbMesInicioAcum.Value <> "-" And Me.cmbMesFinAcum.Value <> "-" And Me.cmbMesInicioAcum.Value <> "" And Me.cmbMesFinAcum.Value <> "" Then
+        If Me.cmbMesInicioAcum.Value > Me.cmbMesFinAcum.Value Then
+            bloqueaEventos = True
+            Me.cmbMesInicioAcum.Value = Me.cmbMesFinAcum.Value
+            bloqueaEventos = False
+            Exit Sub
+        End If
+    End If
+    Call FiltrarAcumulado
+End Sub
+
+Private Sub cmbMesFinAcum_Change()
+    If bloqueaEventos Then Exit Sub
+    If Me.cmbMesInicioAcum.Value <> "-" And Me.cmbMesFinAcum.Value <> "-" And Me.cmbMesInicioAcum.Value <> "" And Me.cmbMesFinAcum.Value <> "" Then
+        If Me.cmbMesInicioAcum.Value > Me.cmbMesFinAcum.Value Then
+            bloqueaEventos = True
+            Me.cmbMesInicioAcum.Value = Me.cmbMesFinAcum.Value
+            bloqueaEventos = False
+            Exit Sub
+        End If
+    End If
+    Call FiltrarAcumulado
+End Sub
+
+Private Sub btnLimpiarFiltros_Click()
+    bloqueaEventos = True
+    Me.cmbFechaInicio.Value = "-"
+    Me.cmbFechaFin.Value = "-"
+    Me.tglFiltroTipo.Value = Null
+    bloqueaEventos = False
+    Call FiltrarHistorial
+End Sub
+
+Private Sub btnLimpiarFiltrosAcum_Click()
+    bloqueaEventos = True
+    Me.cmbMesInicioAcum.Value = "-"
+    Me.cmbMesFinAcum.Value = "-"
+    bloqueaEventos = False
+    Call FiltrarAcumulado
+End Sub
+
+Private Sub btLimpiarArtH_Click()
+    Me.txtBuscarArticulo.Value = ""
+    Me.txtBuscarArtAcum.Value = ""
+End Sub
+
+Private Sub boton2_click()
+    Dim datosOrigen As Variant
+    Dim datosResultado() As Variant
+    Dim i As Long, n As Long
+    Dim fila As Long
+    Dim nombre As Variant
+    Dim wb As Workbook
+    
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    
+    nombre = Application.GetSaveAsFilename(FileFilter:="Libro de Excel (*.xlsx), *.xlsx")
+    
+    If nombre <> False Then
+        Set wb = Workbooks.Add
+        wb.SaveAs Filename:=nombre
+    Else
+        GoTo Salida
+    End If
+    
+    fila = Exist.Range("A" & Exist.Rows.Count).End(xlUp).row
+    datosOrigen = Exist.Range("A1:O" & fila).Value
+    ReDim datosResultado(1 To UBound(datosOrigen, 1), 1 To 6)
+    n = 1
+    
+    datosResultado(n, 1) = datosOrigen(1, 14)
+    datosResultado(n, 2) = datosOrigen(1, 15)
+    datosResultado(n, 3) = datosOrigen(1, 4)
+    datosResultado(n, 4) = datosOrigen(1, 5)
+    datosResultado(n, 5) = datosOrigen(1, 10)
+    datosResultado(n, 6) = datosOrigen(1, 13)
+    
+    For i = 2 To UBound(datosOrigen, 1)
+        If datosOrigen(i, 10) = 0 And Not IsEmpty(datosOrigen(i, 10)) Then
+            n = n + 1
+            datosResultado(n, 1) = datosOrigen(i, 14)
+            datosResultado(n, 2) = datosOrigen(i, 15)
+            datosResultado(n, 3) = datosOrigen(i, 4)
+            datosResultado(n, 4) = datosOrigen(i, 5)
+            datosResultado(n, 5) = datosOrigen(i, 10)
+            datosResultado(n, 6) = datosOrigen(i, 13)
+        End If
+    Next i
+    
+    If n > 1 Then
+        wb.Sheets(1).Cells.ClearContents
+        wb.Sheets(1).Range("A1").Resize(n, 6).Value = datosResultado
+        wb.Sheets(1).Cells.WrapText = False
+        wb.Sheets(1).Columns("A:F").AutoFit
+        wb.Sheets(1).Columns("F").ColumnWidth = 9
+        wb.Sheets(1).Cells(1, 5).Value = "QTY"
+        wb.Sheets(1).Range("A1:F1").Interior.Color = RGB(255, 215, 0)
+        wb.Sheets(1).Range("A1:F" & n).VerticalAlignment = xlCenter
+        wb.Sheets(1).Range("A1:F" & n).HorizontalAlignment = xlCenter
+        wb.Sheets(1).Range("C1:D" & n).HorizontalAlignment = xlLeft
+        wb.Sheets(1).Range("A1:F1").Font.Bold = True
+        wb.Sheets(1).Range("F2:F" & n).NumberFormat = "$#,##0.00"
+        With wb.Sheets(1).Range("A1:F" & n).Font
+            .Name = "Bierstadt"
+            .Size = 12
+        End With
+    End If
+    
+Salida:
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Unload Me
+End Sub
+
+Private Sub btVolver789_click()
+    Me.MultiPage1.Pages(3).Visible = False
+    Me.MultiPage1.Pages(0).Visible = True
+    Me.MultiPage1.Pages(2).Visible = False
+    'Me.MultiPage1.Pages(1).Visible = True
+    Me.MultiPage1.Pages(3).Visible = True
+End Sub
+
+Sub CargarMesesAcumulado()
+    Dim tbl As ListObject
+    Dim datosTabla As Variant
+    Dim i As Long, j As Long
+    Dim dict As Object
+    Dim mesStr As String
+    Dim sortedKeys() As Variant
+    Dim k As Variant
+    Dim temp As Variant
+    
+    Set tbl = consumo.ListObjects("DailyConsumption")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Me.cmbMesInicioAcum.Clear
+    Me.cmbMesFinAcum.Clear
+    Me.cmbMesInicioAcum.AddItem "Todas"
+    Me.cmbMesFinAcum.AddItem "Todas"
+    
+    If tbl.ListRows.Count > 0 Then
+        datosTabla = tbl.DataBodyRange.Value
+        For i = 1 To UBound(datosTabla, 1)
+            If IsDate(datosTabla(i, 5)) Then
+                mesStr = Format(CDate(datosTabla(i, 5)), "yyyy-mm")
+                dict(mesStr) = 1
+            End If
+        Next i
+        
+        If dict.Count > 0 Then
+            ReDim sortedKeys(0 To dict.Count - 1)
+            j = 0
+            For Each k In dict.keys
+                sortedKeys(j) = k
+                j = j + 1
+            Next k
+            
+            For i = LBound(sortedKeys) To UBound(sortedKeys) - 1
+                For j = i + 1 To UBound(sortedKeys)
+                    If sortedKeys(i) < sortedKeys(j) Then
+                        temp = sortedKeys(i)
+                        sortedKeys(i) = sortedKeys(j)
+                        sortedKeys(j) = temp
+                    End If
+                Next j
+            Next i
+            
+            For i = LBound(sortedKeys) To UBound(sortedKeys)
+                Me.cmbMesInicioAcum.AddItem sortedKeys(i)
+                Me.cmbMesFinAcum.AddItem sortedKeys(i)
+            Next i
+        End If
+    End If
+    Me.cmbMesInicioAcum.Value = "Todas"
+    Me.cmbMesFinAcum.Value = "Todas"
+End Sub
+
+Private Sub RedimensionarPage3()
+    With Me.cmbAnio
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.1
+        .top = Me.Height * 0.05
+        .left = Me.Width * 0.03
+        .Font.Size = .Height * 0.46
+    End With
+    
+    With Me.tglFiltroTipo
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.1
+        .top = Me.Height * 0.05
+        .left = Me.Width * 0.15
+        .Font.Size = .Height * 0.46
+        .TripleState = True
+    End With
+    
+    With Me.btnAcumulado
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.1
+        .top = Me.Height * 0.05
+        .left = Me.Width * 0.4
+        .Font.Size = .Height * 0.46
+    End With
+    
+    With Me.txtBuscarArticulo
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.2
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.03
+        .Font.Size = .Height * 0.46
+    End With
+    
+    With Me.cmbFechaInicio
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.105
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.42
+        .Font.Size = .Height * 0.46
+    End With
+    
+    With Me.cmbFechaFin
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.105
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.58
+        .Font.Size = .Height * 0.46
+    End With
+    
+    With Me.btLimpiarArtH
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.03
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.24
+        .Font.Size = .Height * 0.78
+        .ControlTipText = "Borrar búsqueda"
+    End With
+    
+    With Me.btnLimpiarFiltros
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.03
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.697
+        .Font.Size = .Height * 0.78
+        .ControlTipText = "Borrar filtro"
+    End With
+    
+    With Me.btnLimpiarFiltrosAcum
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.03
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.697
+        .Font.Size = .Height * 0.78
+        .ControlTipText = "Borrar filtro"
+    End With
+    
+    With Me.Label24
+        .Height = Me.Height * 0.033
+        .Width = Me.Width * 0.14
+        .top = Me.txtBuscarArticulo.top - .Height
+        .left = Me.Width * 0.03
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.Label25
+        .Height = Me.Height * 0.033
+        .Width = Me.Width * 0.1
+        .top = Me.Height * 0.17
+        .left = Me.Width * 0.32
+        .Font.Size = Me.Height * 0.028
+    End With
+    
+    With Me.Label26
+        .Height = Me.Height * 0.033
+        .Width = Me.Width * 0.04
+        .top = Me.Height * 0.17
+        .left = Me.Width * 0.535
+        .Font.Size = Me.Height * 0.028
+    End With
+    
+    With Me.listBoxHistorial
+        .Height = Me.Height * 0.55
+        .Width = Me.Width * 0.87
+        .top = Me.Height * 0.275
+        .left = Me.Width * 0.03
+        .Font.Size = .Height * 0.045
+        .TextAlign = fmTextAlignCenter
+    End With
+    
+    With Me.Label19
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxHistorial.Width * 0.17
+        .top = Me.listBoxHistorial.top - .Height
+        .left = Me.listBoxHistorial.left
+        .Caption = "Fecha"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.Label35
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxHistorial.Width * 0.18
+        .top = Me.listBoxHistorial.top - .Height
+        .left = Me.Label19.left + Me.Label19.Width
+        .Caption = "Usuario"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.Label20
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxHistorial.Width * 0.35
+        .top = Me.listBoxHistorial.top - .Height
+        .left = Me.Label35.left + Me.Label35.Width
+        .Caption = " Artículo"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.Label21
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxHistorial.Width * 0.11
+        .top = Me.listBoxHistorial.top - .Height
+        .left = Me.Label20.left + Me.Label20.Width
+        .Caption = "Código"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.Label22
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxHistorial.Width * 0.11
+        .top = Me.listBoxHistorial.top - .Height
+        .left = Me.Label21.left + Me.Label21.Width
+        .Caption = "Condición"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.Label23
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxHistorial.Width * 0.08
+        .top = Me.listBoxHistorial.top - .Height
+        .left = Me.Label22.left + Me.Label22.Width
+        .Caption = "QTY"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.listBoxAcumulado
+        .Height = Me.listBoxHistorial.Height
+        .Width = Me.listBoxHistorial.Width
+        .top = Me.listBoxHistorial.top
+        .left = Me.listBoxHistorial.left
+        .TextAlign = fmTextAlignCenter
+        .Font.Size = .Height * 0.045
+    End With
+
+    With Me.labFe
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxAcumulado.Width * 0.11
+        .top = Me.listBoxAcumulado.top - .Height
+        .left = Me.Width * 0.03
+        .Caption = "Fecha"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.labArt
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxAcumulado.Width * 0.5
+        .top = Me.listBoxAcumulado.top - .Height
+        .left = Me.labFe.left + Me.labFe.Width
+        .Caption = "Artículo"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.labRef
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxAcumulado.Width * 0.15
+        .top = Me.listBoxAcumulado.top - .Height
+        .left = Me.labArt.left + Me.labArt.Width
+        .Caption = "Reformulados"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.labNu
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxAcumulado.Width * 0.15
+        .top = Me.listBoxAcumulado.top - .Height
+        .left = Me.labRef.left + Me.labRef.Width
+        .Caption = "Nuevos"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.labEnt
+        .Height = Me.Height * 0.041
+        .Width = Me.listBoxAcumulado.Width * 0.09
+        .top = Me.listBoxAcumulado.top - .Height
+        .left = Me.labNu.left + Me.labNu.Width
+        .Caption = "Entradas"
+        .Font.Size = Me.Height * 0.029
+    End With
+    
+    With Me.txtBuscarArtAcum
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.2
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.03
+        .Font.Size = .Height * 0.46
+    End With
+
+    With Me.cmbMesInicioAcum
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.105
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.42
+        .Font.Size = .Height * 0.46
+    End With
+    
+    With Me.cmbMesFinAcum
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.105
+        .top = Me.Height * 0.16
+        .left = Me.Width * 0.58
+        .Font.Size = .Height * 0.46
+    End With
+End Sub
+
+'kaloSoul24Jun
+'Refactorizar bloque multipage1_change(). Fuerza el cambio de la visibilidad de
+'objetos si se detecta un cambio de hojas del multipage. Objetos de interacción para
+'datos acumulados se ven afectados.
+'Hay que verificar que no degrade la experiencia del usuario
