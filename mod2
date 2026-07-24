@@ -14,13 +14,13 @@ Public Sub labelsTamano(frm As Object)
 
     frm.lblArt.Width = frm.ListBox1.Width * 0.35
     frm.lblDesc.Width = frm.ListBox1.Width * 0.39
-    frm.lblDesc.Left = frm.ListBox1.Left + frm.lblArt.Width
+    frm.lblDesc.left = frm.ListBox1.left + frm.lblArt.Width
     
     With frm.lblStock1
         .Height = frm.Height * 0.041
         .Width = frm.ListBox1.Width * 0.095
-        .Top = frm.Height * 0.16
-        .Left = frm.lblDesc.Left + frm.lblDesc.Width
+        .top = frm.Height * 0.16
+        .left = frm.lblDesc.left + frm.lblDesc.Width
         .Font.Name = "Bierstadt"
         .Font.Size = frm.Height * 0.024
         .Caption = "Reform."
@@ -29,8 +29,8 @@ Public Sub labelsTamano(frm As Object)
     With frm.lblStock2
         .Height = frm.Height * 0.041
         .Width = frm.ListBox1.Width * 0.16
-        .Top = frm.Height * 0.16
-        .Left = frm.lblStock1.Left + frm.lblStock1.Width
+        .top = frm.Height * 0.16
+        .left = frm.lblStock1.left + frm.lblStock1.Width
         .Font.Name = "Bierstadt"
         .Font.Size = frm.Height * 0.024
         .Caption = "Nuevo"
@@ -39,8 +39,8 @@ Public Sub labelsTamano(frm As Object)
     With frm.lblStock3
         .Height = frm.Height * 0.041
         .Width = frm.ListBox1.Width * 0.08
-        .Top = frm.Height * 0.16
-        .Left = frm.lblStock2.Left + frm.lblStock2.Width
+        .top = frm.Height * 0.16
+        .left = frm.lblStock2.left + frm.lblStock2.Width
         .Font.Name = "Bierstadt"
         .Font.Size = frm.Height * 0.024
         .Visible = False
@@ -77,16 +77,16 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.Label11
         .Height = altura
         .Width = ancho
-        .Top = bloque1y
-        .Left = bloque1x
+        .top = bloque1y
+        .left = bloque1x
         .Font.Size = letra
     End With
     
     With frm.Label12
         .Height = altura
         .Width = ancho
-        .Top = bloque2y * 1.37
-        .Left = bloque1x
+        .top = bloque2y * 1.37
+        .left = bloque1x
         .Font.Size = letra
     End With
     
@@ -94,16 +94,16 @@ Public Sub elementosPageDetalles(frm As Object)
         .Height = altura
         .Width = ancho
         '.Top = bloque3y * 1.43
-        .Top = bloque1y
-        .Left = bloque2x
+        .top = bloque1y
+        .left = bloque2x
         .Font.Size = letra
     End With
     
     With frm.Label15
         .Height = altura
         .Width = ancho
-        .Top = bloque2y * 1.2
-        .Left = bloque2x
+        .top = bloque2y * 1.2
+        .left = bloque2x
         .Font.Size = letra
     End With
     
@@ -111,16 +111,16 @@ Public Sub elementosPageDetalles(frm As Object)
         .Height = altura
         .Width = ancho
         '.Top = bloque3y * 1.05
-        .Top = frm.Label12.Top + frm.Label12.Height + (altura2 * 2.4) - altura2 - altura
-        .Left = bloque2x
+        .top = frm.Label12.top + frm.Label12.Height + (altura2 * 2.4) - altura2 - altura
+        .left = bloque2x
         .Font.Size = letra
     End With
     
     With frm.Label14
         .Height = altura
         .Width = ancho
-        .Top = bloque1y
-        .Left = bloque3x
+        .top = bloque1y
+        .left = bloque3x
         .Font.Size = letra
     End With
     
@@ -129,8 +129,8 @@ Public Sub elementosPageDetalles(frm As Object)
         .Width = ancho
         '.Top = bloque2y
         '.Top = frm.Label15.Top
-        .Top = frm.Label11.Top + ((frm.Label27.Top - bloque1y) / 2) '+ (.Height + altura2) / 16
-        .Left = bloque3x
+        .top = frm.Label11.top + ((frm.Label27.top - bloque1y) / 2) '+ (.Height + altura2) / 16
+        .left = bloque3x
         .Font.Size = letra
     End With
     
@@ -138,16 +138,16 @@ Public Sub elementosPageDetalles(frm As Object)
         .Height = altura
         .Width = ancho
         '.Top = bloque3y
-        .Top = frm.Label27.Top
-        .Left = bloque3x
+        .top = frm.Label27.top
+        .left = bloque3x
         .Font.Size = letra
     End With
     
     With frm.Label18
         .Height = altura
         .Width = ancho
-        .Top = bloque3y
-        .Left = bloque3x
+        .top = bloque3y
+        .left = bloque3x
         .Font.Size = letra
         .Visible = False
     End With
@@ -155,8 +155,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.TextBox1
         .Height = altura2 * 2.4
         .Width = ancho2 * 1.35
-        .Top = frm.Label11.Top + frm.Label11.Height
-        .Left = bloque1x
+        .top = frm.Label11.top + frm.Label11.Height
+        .left = bloque1x
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -167,8 +167,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.TextBox2
         .Height = altura2 * 2.4
         .Width = ancho2 * 1.35
-        .Top = frm.Label12.Top + frm.Label12.Height
-        .Left = bloque1x
+        .top = frm.Label12.top + frm.Label12.Height
+        .left = bloque1x
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -179,8 +179,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.TextBox3
         .Height = altura2 * 2
         .Width = ancho2 * 1.35
-        .Top = frm.Label13.Top + frm.Label13.Height
-        .Left = frm.Label13.Left
+        .top = frm.Label13.top + frm.Label13.Height
+        .left = frm.Label13.left
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -190,9 +190,9 @@ Public Sub elementosPageDetalles(frm As Object)
     
     With frm.TextBox4
         .Height = altura2
-        .Width = frm.Label16.Width
-        .Top = frm.Label14.Top + frm.Label14.Height
-        .Left = frm.Label14.Left
+        .Width = frm.Label16.Width * 0.8
+        .top = frm.Label14.top + frm.Label14.Height
+        .left = frm.Label14.left
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -203,8 +203,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.TextBox5
         .Height = altura2
         .Width = ancho2
-        .Top = frm.Label15.Top + frm.Label15.Height
-        .Left = bloque2x
+        .top = frm.Label15.top + frm.Label15.Height
+        .left = bloque2x
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -215,8 +215,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.TextBox6
         .Height = altura2
         .Width = frm.Label16.Width * 0.8
-        .Top = frm.Label16.Top + frm.Label16.Height
-        .Left = bloque3x
+        .top = frm.Label16.top + frm.Label16.Height
+        .left = bloque3x
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -227,8 +227,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.TextBox7
         .Height = altura2
         .Width = frm.Label16.Width * 0.8
-        .Top = frm.Label17.Top + frm.Label17.Height
-        .Left = bloque3x
+        .top = frm.Label17.top + frm.Label17.Height
+        .left = bloque3x
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -239,8 +239,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.TextBox8
         .Height = altura2
         .Width = frm.Label16.Width * 0.8
-        .Top = frm.Label18.Top + frm.Label18.Height
-        .Left = bloque3x
+        .top = frm.Label18.top + frm.Label18.Height
+        .left = bloque3x
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -251,8 +251,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.TextBox9
         .Height = altura2
         .Width = ancho2
-        .Top = frm.Label27.Top + frm.Label27.Height
-        .Left = bloque2x
+        .top = frm.Label27.top + frm.Label27.Height
+        .left = bloque2x
         .Font.Size = letraCaja
         .Enabled = True
         .WordWrap = True
@@ -263,16 +263,16 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.btVolver789
         .Height = frm.MultiPage1.Height
         .Width = frm.Width * 0.025
-        .Top = 0
-        .Left = 0
+        .top = 0
+        .left = 0
         .Font.Size = letra
     End With
    
     With frm.ListBox2
         .Height = frm.Height * 0.35
         .Width = frm.MultiPage1.Width * 0.6
-        .Top = frm.TextBox2.Top + frm.TextBox2.Height * 1.7
-        .Left = frm.TextBox2.Left
+        .top = frm.TextBox2.top + frm.TextBox2.Height * 1.7
+        .left = frm.TextBox2.left
         .ColumnCount = 5
         .Font.Name = "Bierstadt"
         .Font.Size = frm.Height * 0.022
@@ -287,8 +287,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.Label28
         .Height = frm.Height * 0.041
         .Width = frm.ListBox2.Width * 0.25
-        .Top = frm.ListBox2.Top - .Height
-        .Left = frm.ListBox2.Left
+        .top = frm.ListBox2.top - .Height
+        .left = frm.ListBox2.left
         .Caption = "Fecha"
         .Font.Size = frm.Height * 0.024
     End With
@@ -296,8 +296,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.Label34
         .Height = frm.Height * 0.041
         .Width = frm.ListBox2.Width * 0.36
-        .Top = frm.Label28.Top
-        .Left = frm.ListBox2.Left + frm.Label28.Width
+        .top = frm.Label28.top
+        .left = frm.ListBox2.left + frm.Label28.Width
         .Caption = "Usuario"
         .Font.Size = frm.Height * 0.024
     End With
@@ -305,8 +305,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.Label29
         .Height = frm.Height * 0.041
         .Width = frm.ListBox2.Width * 0.16
-        .Top = frm.Label28.Top
-        .Left = frm.Label34.Left + frm.Label34.Width
+        .top = frm.Label28.top
+        .left = frm.Label34.left + frm.Label34.Width
         .Caption = "Condición"
         .Font.Size = frm.Height * 0.024
     End With
@@ -314,8 +314,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.Label30
         .Height = frm.Height * 0.041
         .Width = frm.ListBox2.Width * 0.12
-        .Top = frm.Label28.Top
-        .Left = frm.Label29.Left + frm.Label29.Width
+        .top = frm.Label28.top
+        .left = frm.Label29.left + frm.Label29.Width
         .Caption = "Código"
         .Font.Size = frm.Height * 0.024
     End With
@@ -323,8 +323,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.Label31
         .Height = frm.Height * 0.041
         .Width = frm.ListBox2.Width * 0.11
-        .Top = frm.Label28.Top
-        .Left = frm.Label30.Left + frm.Label30.Width
+        .top = frm.Label28.top
+        .left = frm.Label30.left + frm.Label30.Width
         .Caption = "QYT"
         .Font.Size = frm.Height * 0.024
     End With
@@ -332,8 +332,8 @@ Public Sub elementosPageDetalles(frm As Object)
     With frm.ListBox3
         .Height = frm.Height * 0.25
         .Width = frm.Width * 0.5
-        .Top = frm.Height * 0.45
-        .Left = bloque1x
+        .top = frm.Height * 0.45
+        .left = bloque1x
         .ColumnCount = 5
     End With
 End Sub
@@ -421,4 +421,4 @@ End Sub
 
 
 
-'kalo23junMod2
+'kalo24junMod2
