@@ -190,6 +190,79 @@ Private Sub FiltrarListBox1()
     Me.ListBox1.List = vector
 End Sub
 
+Private Sub btnExportarAcumulado_Click()
+    Dim nombreArchivo As Variant
+    Dim wbNuevo As Workbook
+    Dim wsDestino As Worksheet
+    Dim datosResultado() As Variant
+    Dim numFilas As Long
+    Dim numCols As Long
+    Dim i As Long, j As Long
+
+    numFilas = Me.listBoxAcumulado.ListCount
+    If numFilas = 0 Then
+        MsgBox "No hay datos acumulados para exportar.", vbExclamation, "Exportar"
+        Exit Sub
+    End If
+
+    numCols = Me.listBoxAcumulado.ColumnCount
+    If numCols < 1 Then numCols = 5
+    
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    
+    nombreArchivo = Application.GetSaveAsFilename( _
+        InitialFileName:="Reporte_Acumulado.xlsx", _
+        FileFilter:="Libro de Excel (*.xlsx), *.xlsx", _
+        Title:="Guardar Reporte Acumulado")
+        
+    If nombreArchivo <> False Then
+        ReDim datosResultado(1 To numFilas + 1, 1 To numCols)
+        
+        datosResultado(1, 1) = "Mes/Fecha"
+        datosResultado(1, 2) = "Artículo"
+        datosResultado(1, 3) = "Reformulados"
+        datosResultado(1, 4) = "Nuevos"
+        datosResultado(1, 5) = "Entradas"
+        
+        For i = 0 To numFilas - 1
+            For j = 0 To numCols - 1
+                datosResultado(i + 2, j + 1) = Me.listBoxAcumulado.List(i, j)
+            Next j
+        Next i
+        
+        Set wbNuevo = Workbooks.Add
+        Set wsDestino = wbNuevo.Sheets(1)
+        
+        wsDestino.Range("A1").Resize(UBound(datosResultado, 1), UBound(datosResultado, 2)).Value = datosResultado
+        
+        With wsDestino
+            .Cells.WrapText = False
+            .Columns("A:E").AutoFit
+            .Range("A1:E1").Interior.Color = RGB(255, 215, 0) ' Color de cabecera
+            .Range("A1:E1").Font.Bold = True
+            
+            .Range("A1:E" & numFilas + 1).VerticalAlignment = xlCenter
+            .Range("A1:E" & numFilas + 1).HorizontalAlignment = xlCenter
+            .Range("B2:B" & numFilas + 1).HorizontalAlignment = xlLeft
+            
+            .Range("C2:E" & numFilas + 1).NumberFormat = "#,##0"
+            
+            With .Range("A1:E" & numFilas + 1).Font
+                .Name = "Bierstadt"
+                .Size = 12
+            End With
+        End With
+        
+        wbNuevo.SaveAs Filename:=nombreArchivo
+        MsgBox "Exportación exitosa.", vbInformation, "Completado"
+    End If
+    
+Salida:
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+End Sub
+
 Private Sub UserForm_Initialize()
     Dim i As Integer, totalWidth As String
     Dim j As Integer, totalWidth2 As String
@@ -1585,7 +1658,7 @@ Private Sub RedimensionarPage3()
         .Height = Me.Height * 0.06
         .Width = Me.Width * 0.105
         .top = Me.Height * 0.16
-        .left = Me.Width * 0.42
+        .left = Me.Width * 0.43
         .Font.Size = .Height * 0.46
     End With
     
@@ -1593,7 +1666,7 @@ Private Sub RedimensionarPage3()
         .Height = Me.Height * 0.06
         .Width = Me.Width * 0.105
         .top = Me.Height * 0.16
-        .left = Me.Width * 0.58
+        .left = Me.Width * 0.59
         .Font.Size = .Height * 0.46
     End With
     
@@ -1606,11 +1679,19 @@ Private Sub RedimensionarPage3()
         .ControlTipText = "Borrar búsqueda"
     End With
     
+    With Me.btnExportarAcumulado
+        .Height = Me.Height * 0.06
+        .Width = Me.Width * 0.03
+        .top = Me.Height * 0.16
+        .left = Me.btLimpiarArtH.left + Me.btLimpiarArtH.Width * 1.4
+        .Font.Size = .Height * 0.46
+    End With
+    
     With Me.btnLimpiarFiltros
         .Height = Me.Height * 0.06
         .Width = Me.Width * 0.03
         .top = Me.Height * 0.16
-        .left = Me.Width * 0.697
+        .left = Me.Width * 0.707
         .Font.Size = .Height * 0.78
         .ControlTipText = "Borrar filtro"
     End With
@@ -1636,7 +1717,7 @@ Private Sub RedimensionarPage3()
         .Height = Me.Height * 0.033
         .Width = Me.Width * 0.1
         .top = Me.Height * 0.17
-        .left = Me.Width * 0.32
+        .left = Me.Width * 0.33
         .Font.Size = Me.Height * 0.028
     End With
     
@@ -1644,7 +1725,7 @@ Private Sub RedimensionarPage3()
         .Height = Me.Height * 0.033
         .Width = Me.Width * 0.04
         .top = Me.Height * 0.17
-        .left = Me.Width * 0.535
+        .left = Me.Width * 0.545
         .Font.Size = Me.Height * 0.028
     End With
     
@@ -1777,7 +1858,7 @@ Private Sub RedimensionarPage3()
         .Height = Me.Height * 0.06
         .Width = Me.Width * 0.105
         .top = Me.Height * 0.16
-        .left = Me.Width * 0.42
+        .left = Me.Width * 0.43
         .Font.Size = .Height * 0.46
     End With
     
@@ -1785,12 +1866,12 @@ Private Sub RedimensionarPage3()
         .Height = Me.Height * 0.06
         .Width = Me.Width * 0.105
         .top = Me.Height * 0.16
-        .left = Me.Width * 0.58
+        .left = Me.Width * 0.59
         .Font.Size = .Height * 0.46
     End With
 End Sub
 
-'kaloSoul24Jun
+'kaloSoul28Jun
 'Refactorizar bloque multipage1_change(). Fuerza el cambio de la visibilidad de
 'objetos si se detecta un cambio de hojas del multipage. Objetos de interacción para
 'datos acumulados se ven afectados.
